@@ -1,16 +1,6 @@
 import type { Character } from "../character";
-
-export enum DamageType
-{
-    Attack = "Attack",
-    Talisman = "Talisman",
-    Wound = "Wound",
-}
-
-export interface DamageMetadata
-{
-    color: string;
-}
+import type { DamageType } from "./enums";
+import type { IDamageMetadata } from "./types";
 
 export abstract class Damage
 {
@@ -18,7 +8,7 @@ export abstract class Damage
 
     readonly abstract amount: number;
     readonly abstract type: DamageType;
-    readonly abstract metadata: DamageMetadata;
+    readonly abstract metadata: IDamageMetadata;
     readonly abstract targetHPAfterDamage: number;
     readonly source: Character;
     readonly target: Character;

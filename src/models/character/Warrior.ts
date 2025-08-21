@@ -1,6 +1,8 @@
-import { Character, type AttackResult } from "./Character";
+import { Character } from "./Character";
 import { AttackType, Damage } from "../damage";
 import type { Recovery } from "../recovery";
+
+import type { IAttackResult } from "./types";
 
 export class Warrior extends Character
 {
@@ -20,7 +22,7 @@ export class Warrior extends Character
         return `⚔️${this._name}`;
     }
 
-    attack(target: Character): AttackResult
+    attack(target: Character): IAttackResult
     {
         const damages: Damage[] = [];
         const recoveries: Recovery[] = [];

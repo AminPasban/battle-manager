@@ -64,17 +64,24 @@ body {
     color: #212121;
 }
 
-.log-color {
-    content: "";
+.log-badge {
     position: absolute;
     top: 0;
-    left: 0;
     width: 0.25rem;
     height: 100%;
+}
+
+.log-badge-start {
+    left: 0;
     border-radius: 0 0.25rem 0.25rem 0;
 }
 
-.log-line-combo .log-color {
+.log-badge-end {
+    right: 0;
+    border-radius: 0.25rem 0 0 0.25rem;
+}
+
+.log-line-combo .log-badge-start {
     left: 2rem;
 }
 

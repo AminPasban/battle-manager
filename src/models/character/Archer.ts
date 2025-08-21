@@ -1,5 +1,6 @@
-import { Character, type AttackResult, type TakeAttackResult } from "./Character";
+import { Character } from "./Character";
 import Utils from "../../utils";
+import type { IAttackResult, ITakeAttackResult } from "./types";
 
 export class Archer extends Character
 {
@@ -17,7 +18,7 @@ export class Archer extends Character
         return `🏹${this._name}`
     }
 
-    attack(target: Character): AttackResult
+    attack(target: Character): IAttackResult
     {
         const { damage } = this.shoot(target);
 
@@ -27,7 +28,7 @@ export class Archer extends Character
         return { damages: [damage] }
     }
 
-    private shoot(target: Character): TakeAttackResult
+    private shoot(target: Character): ITakeAttackResult
     {
         const crit = {
             multiplier: this.critMultiplier,

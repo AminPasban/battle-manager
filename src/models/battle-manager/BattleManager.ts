@@ -1,5 +1,5 @@
-import type { Character } from "./character";
-import { Logger } from "./logger";
+import type { Character } from "../character";
+import { Logger } from "../logger";
 
 export class BattleManager
 {
@@ -29,31 +29,28 @@ export class BattleManager
             if (defender.hp <= 0)
             {
                 logger?.logWinner(attacker);
-                return attacker;
+                return { winner: attacker };
             }
 
             [attacker, defender] = [defender, attacker];
         }
     }
 
-    simulateFights(fights: number)
+    simulateFights(fights: number, logger?: Logger)
     {
-        const winStats = {
-            [this.player1.name]: { count: 0, rate: 0 },
-            [this.player2.name]: { count: 0, rate: 0 }
-        }
+        const [c1, c2] = [this.player1, this.player2].map(({ name }) => ({ name, wins: 0, rate: 0 }));
 
         for (let i = 0; i < fights; i++)
         {
-            const winner = this.fight();
-            winStats[winner.name].count += 1;
+            const winner = c1.name === this.fight().winner.name ? c1 : c2;
+            winner.wins += 1;
             this.reset();
         }
 
-        winStats[this.player1.name].rate = +(winStats[this.player1.name].count * 100 / fights).toFixed(1);
-        winStats[this.player2.name].rate = +(winStats[this.player2.name].count * 100 / fights).toFixed(1);
+        c1.rate = +(c1.wins * 100 / fights).toFixed(1);
+        c2.rate = +(c2.wins * 100 / fights).toFixed(1);
 
-        return { ...winStats, fights };
+        logger?.logSimulate({ fights, stats: [c1, c2] });
     }
 
     reset()

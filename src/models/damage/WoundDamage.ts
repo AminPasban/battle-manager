@@ -1,11 +1,13 @@
-import { Damage, DamageType, type DamageMetadata } from "./Damage";
+import { Damage } from "./Damage";
 import type { Character } from "../character";
 import Utils from "../../utils";
+import { DamageType } from "./enums";
+import type { IDamageMetadata } from "./types";
 
 export class WoundDamage extends Damage
 {
     readonly type: DamageType = DamageType.Wound;
-    readonly metadata: DamageMetadata = { color: "#DC5F00" };
+    readonly metadata: IDamageMetadata = { color: "#DC5F00" };
 
     readonly amount: number = 0;
     readonly targetHPAfterDamage: number;

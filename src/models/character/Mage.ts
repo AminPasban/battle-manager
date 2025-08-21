@@ -1,7 +1,8 @@
-import { Character, type AttackResult } from "./Character";
+import { Character } from "./Character";
 import { Damage, TalismanDamage } from "../damage";
 import type { Recovery } from "../recovery";
 import Utils from "../../utils";
+import type { IAttackResult } from "./types";
 
 export class Mage extends Character
 {
@@ -20,7 +21,7 @@ export class Mage extends Character
         return `🧙‍♂️${this._name}`
     }
 
-    attack(target: Character): AttackResult
+    attack(target: Character): IAttackResult
     {
         const damages: Damage[] = [];
         const recoveries: Recovery[] = []

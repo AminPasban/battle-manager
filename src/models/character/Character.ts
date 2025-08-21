@@ -1,23 +1,7 @@
-import { AttackDamage, Damage, TalismanDamage, WoundDamage, type AttackSpecialOptions } from "../damage";
-import { HealRecovery, LifestealRecovery, Recovery } from "../recovery";
 import Utils from "../../utils";
-
-export interface AttackResult
-{
-    damages: Damage[],
-    recoveries?: Recovery[];
-}
-
-export interface TakeAttackResult
-{
-    damage: AttackDamage;
-}
-
-export interface CharacterPower
-{
-    readonly min: number;
-    readonly max: number;
-}
+import { AttackDamage, TalismanDamage, WoundDamage, type IAttackSpecialOptions } from "../damage";
+import { HealRecovery, LifestealRecovery, Recovery } from "../recovery";
+import type { IAttackResult, ICharacterPower, ITakeAttackResult } from "./types";
 
 export abstract class Character
 {
@@ -26,7 +10,7 @@ export abstract class Character
     protected _maxHP: number = 800;
     protected _currentHP: number = 800;
     protected _armor: number = 0;
-    readonly power: CharacterPower = { min: 95, max: 105 };
+    readonly power: ICharacterPower = { min: 95, max: 105 };
 
     constructor(name: string)
     {
@@ -48,7 +32,7 @@ export abstract class Character
     }
     abstract get name(): string;
 
-    abstract attack(enemy: Character): AttackResult;
+    abstract attack(enemy: Character): IAttackResult;
 
     private _adjustHP(amount: number, increase: boolean = true)
     {
@@ -59,7 +43,7 @@ export abstract class Character
     protected onBeforeTakeHit() { }
     protected onAfterTakeHit() { }
 
-    takeHit(source: Character, specialEffects?: AttackSpecialOptions): TakeAttackResult
+    takeHit(source: Character, specialEffects?: IAttackSpecialOptions): ITakeAttackResult
     {
         this.onBeforeTakeHit();
 

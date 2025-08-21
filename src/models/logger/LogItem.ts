@@ -1,17 +1,11 @@
-import type { LogTextEl } from "./LogText";
-
-export interface LogItemOptions
-{
-    color?: string;
-    centered?: boolean;
-}
+import type { ILogItemOptions, ILogTextEl } from "./types";
 
 export class LogItem
 {
     public readonly element: HTMLDivElement = document.createElement("div");
-    private options?: LogItemOptions;
+    private options?: ILogItemOptions;
 
-    constructor(textEl?: LogTextEl, options?: LogItemOptions)
+    constructor(textEl?: ILogTextEl, options?: ILogItemOptions)
     {
         this.element.className = "log-item";
         this.options = options;
@@ -20,7 +14,7 @@ export class LogItem
             this.appendLogLine(textEl, options);
     }
 
-    appendLogLine(textEl: LogTextEl, options?: LogItemOptions)
+    appendLogLine(textEl: ILogTextEl, options?: ILogItemOptions)
     {
         let opts = options ?? this.options;
 
@@ -28,7 +22,7 @@ export class LogItem
         this.element.appendChild(logLine);
     }
 
-    appendComboLogLine(textEls: LogTextEl[], options?: LogItemOptions[])
+    appendComboLogLine(textEls: ILogTextEl[], options?: ILogItemOptions[])
     {
         if (textEls.length === 1)
         {
@@ -50,9 +44,9 @@ export class LogItem
         this.getLastLogLine()?.appendChild(comboEl);
     }
 
-    createLogLine(textEl: LogTextEl, opts?: LogItemOptions, combo?: boolean)
+    createLogLine(textEl: ILogTextEl, opts?: ILogItemOptions, combo?: boolean)
     {
-        const lineEl = document.createElement("div")
+        const lineEl = document.createElement("div");
         lineEl.classList.add("log-line");
         if (opts?.centered)
             lineEl.classList.add("log-line-center");
@@ -61,15 +55,33 @@ export class LogItem
 
         lineEl.appendChild(textEl);
 
-        if (opts?.color)
+        if (opts?.badge)
         {
-            const colorEl = document.createElement("div")
-            colorEl.classList.add("log-color");
-            colorEl.style.backgroundColor = opts.color;
-            lineEl.appendChild(colorEl);
+            const { color, position } = opts.badge;
+
+            if (position === "start" || position === "both")
+            {
+                const badgeEl = this.createBadgeEl(color);
+                badgeEl.classList.add("log-badge-start");
+                lineEl.appendChild(badgeEl);
+            }
+            if (position === "end" || position === "both") {
+                const badgeEl = this.createBadgeEl(color);
+                badgeEl.classList.add("log-badge-end");
+                lineEl.appendChild(badgeEl);
+            }
         }
 
         return lineEl;
+    }
+
+    createBadgeEl(color: string)
+    {
+        const badgeEl = document.createElement("div");
+        badgeEl.classList.add("log-badge");
+        badgeEl.style.backgroundColor = color;
+
+        return badgeEl;
     }
 
     getLastLogLine()

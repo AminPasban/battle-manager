@@ -1,38 +1,21 @@
-import { Damage, DamageType, type DamageMetadata } from "./Damage";
+import { Damage } from "./Damage";
 import type { Character } from "../character";
 import Utils from "../../utils";
-
-export enum AttackType
-{
-    Basic = "basic",
-    Crit = "crit"
-}
-
-export interface AttackSpecialOptions
-{
-    crit?: {
-        multiplier: number;
-        chance: number;
-    };
-}
-
-export interface AttackSpecialEffects
-{
-    critMultiplier?: number;
-}
+import { AttackType, DamageType } from "./enums";
+import type { IAttackSpecialEffects, IAttackSpecialOptions, IDamageMetadata } from "./types";
 
 export class AttackDamage extends Damage
 {
     readonly type: DamageType = DamageType.Attack;
-    readonly metadata: DamageMetadata = { color: "#2D3250" };
+    readonly metadata: IDamageMetadata = { color: "#2D3250" };
 
     readonly amount: number = 0;
     readonly attackType: AttackType = AttackType.Basic;
     readonly targetHPAfterDamage: number;
-    readonly specialEffects: AttackSpecialEffects = {};
+    readonly specialEffects: IAttackSpecialEffects = {};
     readonly followUpDamages: AttackDamage[] = [];
 
-    constructor(source: Character, target: Character, specialOptions?: AttackSpecialOptions)
+    constructor(source: Character, target: Character, specialOptions?: IAttackSpecialOptions)
     {
         super(source, target);
 

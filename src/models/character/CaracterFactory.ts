@@ -2,12 +2,7 @@ import { Warrior } from "./Warrior";
 import { Mage } from "./Mage";
 import { Archer } from "./Archer";
 
-export enum CharacterType
-{
-    Warrior = "warrior",
-    Mage = "mage",
-    Archer = "archer",
-}
+import { CharacterType } from "./enums";
 
 export class CharacterFactory
 {
