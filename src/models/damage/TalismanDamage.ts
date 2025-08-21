@@ -11,11 +11,19 @@ export class TalismanDamage extends Damage
 
     readonly amount: number = 0;
     readonly targetHPAfterDamage: number;
+    readonly isTriggerd: boolean = false;
 
-    constructor(source: Character, target: Character, power: number)
+    constructor(source: Character, target: Character, power: number, chance: number)
     {
         super(source, target);
-        this.amount = power;
-        this.targetHPAfterDamage = Utils.clamp(this.targetHPBeforeDamage - this.amount, target.maxHP);
+
+        this.targetHPAfterDamage = target.hp;
+
+        if (Utils.isLucky(chance))
+        {
+            this.isTriggerd = true;
+            this.amount = power;
+            this.targetHPAfterDamage = Utils.clamp(this.targetHPBeforeDamage - this.amount, target.maxHP);
+        }
     }
 }

@@ -1,6 +1,6 @@
 import { Character } from "./Character";
 import Utils from "../../utils";
-import type { IAttackResult, ITakeAttackResult } from "./types";
+import type { IAttackResult, ITakeHitResult } from "./types";
 
 export class Archer extends Character
 {
@@ -15,25 +15,28 @@ export class Archer extends Character
 
     get name()
     {
-        return `🏹${this._name}`
+        return `🏹${this._name}`;
     }
 
     attack(target: Character): IAttackResult
     {
-        const { damage } = this.shoot(target);
+        const damages = this.shoot(target);
 
         if (Utils.isLucky(this.multiAttackChance))
-            damage.addFollowUpDamage(this.shoot(target).damage);
+        {
+            const followUpDamage = this.shoot(target).attackDamage;
+            damages.attackDamage.addFollowUpDamage(followUpDamage);
+        }
 
-        return { damages: [damage] }
+        return { damages: Object.values(damages) };
     }
 
-    private shoot(target: Character): ITakeAttackResult
+    private shoot(target: Character): ITakeHitResult
     {
         const crit = {
             multiplier: this.critMultiplier,
             chance: this.critChance
-        }
+        };
         return target.takeHit(this, { crit });
     }
 }

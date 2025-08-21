@@ -1,7 +1,6 @@
-import { Character } from "./Character";
-import { Damage, TalismanDamage } from "../damage";
+import type { Damage } from "../damage";
 import type { Recovery } from "../recovery";
-import Utils from "../../utils";
+import { Character } from "./Character";
 import type { IAttackResult } from "./types";
 
 export class Mage extends Character
@@ -18,22 +17,28 @@ export class Mage extends Character
 
     get name()
     {
-        return `🧙‍♂️${this._name}`
+        return `🧙‍♂️${this._name}`;
     }
 
     attack(target: Character): IAttackResult
     {
         const damages: Damage[] = [];
-        const recoveries: Recovery[] = []
+        const recoveries: Recovery[] = [];
 
-        const { damage } = target.takeHit(this);
-        damages.push(damage);
+        const canTriggerTalisman = this.hp > this.talismanPower * this.talismanWoundMultiplier;
 
-        const talismanDamage = this.talisman(target);
-        if (talismanDamage)
+        const talisman = {
+            power: this.talismanPower,
+            chance: canTriggerTalisman ? this.talismanChance : 0
+        };
+
+        const takeHitResult = target.takeHit(this, { talisman });
+        damages.push(...Object.values(takeHitResult));
+
+        if (takeHitResult.talismanDamage)
         {
             const woundDamage = this.wound(this.talismanPower, this.talismanWoundMultiplier);
-            damages.push(talismanDamage, woundDamage);
+            damages.push(woundDamage);
         }
         else
         {
@@ -42,13 +47,5 @@ export class Mage extends Character
         }
 
         return { damages, recoveries };
-    }
-
-    talisman(target: Character): TalismanDamage | undefined
-    {
-        const canTriggerTalisman = this.hp > this.talismanPower * this.talismanWoundMultiplier;
-
-        if (canTriggerTalisman && Utils.isLucky(this.talismanChance))
-            return target.takeTalisman(this, this.talismanPower)
     }
 }

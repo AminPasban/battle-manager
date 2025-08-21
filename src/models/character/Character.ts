@@ -1,7 +1,7 @@
 import Utils from "../../utils";
 import { AttackDamage, TalismanDamage, WoundDamage, type IAttackSpecialOptions } from "../damage";
 import { HealRecovery, LifestealRecovery, Recovery } from "../recovery";
-import type { IAttackResult, ICharacterPower, ITakeAttackResult } from "./types";
+import type { IAttackResult, ICharacterPower, ITakeHitResult } from "./types";
 
 export abstract class Character
 {
@@ -43,16 +43,42 @@ export abstract class Character
     protected onBeforeTakeHit() { }
     protected onAfterTakeHit() { }
 
-    takeHit(source: Character, specialEffects?: IAttackSpecialOptions): ITakeAttackResult
+    takeHit(source: Character, specialEffects?: IAttackSpecialOptions): ITakeHitResult
     {
         this.onBeforeTakeHit();
 
-        const attackDamage = new AttackDamage(source, this, specialEffects);
+        const attackDamage = new AttackDamage(
+            source, this,
+            specialEffects?.crit?.multiplier,
+            specialEffects?.crit?.chance
+        );
         this._adjustHP(attackDamage.amount, false);
+        const talismanDamage = this._takeTalismanHit(source, specialEffects);
 
         this.onAfterTakeHit();
 
-        return { damage: attackDamage };
+        if (!talismanDamage)
+            return { attackDamage };
+        else 
+            return { attackDamage, talismanDamage }
+    }
+
+    private _takeTalismanHit(source: Character, specialEffects?: IAttackSpecialOptions)
+    {
+        if (!specialEffects?.talisman)
+            return;
+
+        const talismanDamage = new TalismanDamage(
+            source, this,
+            specialEffects.talisman.power,
+            specialEffects.talisman.chance
+        );
+
+        if (talismanDamage.isTriggerd)
+        {
+            this._adjustHP(talismanDamage.amount, false);
+            return talismanDamage;
+        }
     }
 
     adjustArmor(amount: number, increase: boolean = true)
@@ -64,13 +90,6 @@ export abstract class Character
     reborn()
     {
         this._currentHP = this.maxHP;
-    }
-
-    takeTalisman(source: Character, power: number)
-    {
-        const talismanDamage = new TalismanDamage(source, this, power);
-        this._adjustHP(talismanDamage.amount, false);
-        return talismanDamage;
     }
 
     heal(multiplier: number): Recovery

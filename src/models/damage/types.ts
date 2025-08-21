@@ -5,6 +5,10 @@ export interface IAttackSpecialOptions
         multiplier: number;
         chance: number;
     };
+    talisman?: {
+        power: number;
+        chance: number;
+    };
 }
 
 export interface IAttackSpecialEffects

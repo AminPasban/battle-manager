@@ -1,5 +1,5 @@
 import { Character } from "./Character";
-import { AttackType, Damage } from "../damage";
+import { AttackType } from "../damage";
 import type { Recovery } from "../recovery";
 
 import type { IAttackResult } from "./types";
@@ -24,23 +24,21 @@ export class Warrior extends Character
 
     attack(target: Character): IAttackResult
     {
-        const damages: Damage[] = [];
-        const recoveries: Recovery[] = [];
-
         const crit = {
             multiplier: this.critMultiplier,
             chance: this.critChance
         };
+        
+        const damages = target.takeHit(this, { crit });
+        
+        const recoveries: Recovery[] = [];
 
-        const { damage } = target.takeHit(this, { crit });
-        damages.push(damage);
-
-        if (damage.attackType === AttackType.Crit)
+        if (damages.attackDamage.attackType === AttackType.Crit)
         {
-            const recovery = this.lifesteal(damage.amount, this.lifestealMultiplier);
+            const recovery = this.lifesteal(damages.attackDamage.amount, this.lifestealMultiplier);
             recoveries.push(recovery);
         }
 
-        return { damages, recoveries };
+        return { damages: Object.values(damages), recoveries };
     }
 }
