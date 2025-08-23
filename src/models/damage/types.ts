@@ -1,14 +1,24 @@
+export interface ICrit
+{
+    multiplier: number;
+    chance: number;
+}
+
+export interface ITalisman
+{
+    power: number;
+    chance: number;
+}
+
+export interface IMultiAttack
+{
+    chance: number;
+}
 
 export interface IAttackSpecialOptions
 {
-    crit?: {
-        multiplier: number;
-        chance: number;
-    };
-    talisman?: {
-        power: number;
-        chance: number;
-    };
+    crit?: ICrit;
+    talisman?: ITalisman;
 }
 
 export interface IAttackSpecialEffects

@@ -1,4 +1,4 @@
-import type { AttackDamage, Damage, TalismanDamage } from "../damage";
+import type { AttackDamage, Damage, ICrit, IMultiAttack, ITalisman, TalismanDamage } from "../damage";
 import type { Recovery } from "../recovery";
 
 export interface IAttackResult
@@ -11,6 +11,22 @@ export interface ITakeHitResult
 {
     attackDamage: AttackDamage;
     talismanDamage?: TalismanDamage;
+}
+
+export interface ICritAbility
+{
+    crit: ICrit;
+}
+
+export interface ITalismanAbility
+{
+    talisman: ITalisman;
+    talismanWoundMultiplier: number;
+}
+
+export interface IMultiAttackAbility
+{
+    multiAttack: IMultiAttack;
 }
 
 export interface ICharacterPower

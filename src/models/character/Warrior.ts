@@ -1,21 +1,18 @@
 import { Character } from "./Character";
-import { AttackType } from "../damage";
+import { AttackDamage, AttackType, type ICrit } from "../damage";
 import type { Recovery } from "../recovery";
 
-import type { IAttackResult } from "./types";
+import type { IAttackResult, ICritAbility } from "./types";
 
-export class Warrior extends Character
+export class Warrior extends Character implements ICritAbility
 {
     protected _maxHP = 1200;
     protected _currentHP = 1200;
     protected _armor = 5;
 
     readonly power = { min: 142, max: 149 };
-    readonly critMultiplier = 2.2;
-    readonly critChance = 0.25;
+    readonly crit: ICrit = { multiplier: 2.2, chance: 0.25 };
     readonly lifestealMultiplier = 0.25;
-    readonly gainArmorAmount = 7;
-    readonly gainArmorChance = 1;
 
     get name()
     {
@@ -24,21 +21,17 @@ export class Warrior extends Character
 
     attack(target: Character): IAttackResult
     {
-        const crit = {
-            multiplier: this.critMultiplier,
-            chance: this.critChance
-        };
-        
-        const damages = target.takeHit(this, { crit });
-        
+        const damage = new AttackDamage(this, target, this.crit);
+        target.takeHit(damage);
+
         const recoveries: Recovery[] = [];
 
-        if (damages.attackDamage.attackType === AttackType.Crit)
+        if (damage.attackType === AttackType.Crit)
         {
-            const recovery = this.lifesteal(damages.attackDamage.amount, this.lifestealMultiplier);
+            const recovery = this.lifesteal(damage.amount, this.lifestealMultiplier);
             recoveries.push(recovery);
         }
 
-        return { damages: Object.values(damages), recoveries };
+        return { damages: [damage], recoveries };
     }
 }

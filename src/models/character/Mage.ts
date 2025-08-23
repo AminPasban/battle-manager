@@ -1,17 +1,16 @@
-import type { Damage } from "../damage";
+import { AttackDamage, TalismanDamage, type Damage, type ITalisman } from "../damage";
 import type { Recovery } from "../recovery";
 import { Character } from "./Character";
-import type { IAttackResult } from "./types";
+import type { IAttackResult, ITalismanAbility } from "./types";
 
-export class Mage extends Character
+export class Mage extends Character implements ITalismanAbility
 {
     protected _maxHP = 980;
     protected _currentHP = 980;
     protected _armor = 2.5;
 
     readonly power = { min: 178, max: 182 };
-    readonly talismanPower = 155;
-    readonly talismanChance = 0.35;
+    readonly talisman: ITalisman = { power: 155, chance: 0.35 };
     readonly talismanWoundMultiplier = 0.25;
     readonly healMultiplier = 0.05;
 
@@ -25,20 +24,18 @@ export class Mage extends Character
         const damages: Damage[] = [];
         const recoveries: Recovery[] = [];
 
-        const canTriggerTalisman = this.hp > this.talismanPower * this.talismanWoundMultiplier;
+        const attackDamage = new AttackDamage(this, target);
+        damages.push(attackDamage);
+        target.takeHit(attackDamage);
 
-        const talisman = {
-            power: this.talismanPower,
-            chance: canTriggerTalisman ? this.talismanChance : 0
-        };
+        const canTriggerTalisman = this.hp > this.talisman.power * this.talismanWoundMultiplier;
+        const talismanDamage = new TalismanDamage(this, target, this.talisman.power, this.talisman.chance);
 
-        const takeHitResult = target.takeHit(this, { talisman });
-        damages.push(...Object.values(takeHitResult));
-
-        if (takeHitResult.talismanDamage)
+        if (canTriggerTalisman && talismanDamage.isTriggerd)
         {
-            const woundDamage = this.wound(this.talismanPower, this.talismanWoundMultiplier);
-            damages.push(woundDamage);
+            const woundDamage = this.wound(this.talisman.power, this.talismanWoundMultiplier);
+            damages.push(talismanDamage, woundDamage);
+            target.takeHit(talismanDamage);
         }
         else
         {

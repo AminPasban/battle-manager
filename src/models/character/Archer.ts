@@ -1,17 +1,17 @@
 import { Character } from "./Character";
 import Utils from "../../utils";
-import type { IAttackResult, ITakeHitResult } from "./types";
+import type { IAttackResult, ICritAbility, IMultiAttackAbility } from "./types";
+import { AttackDamage, type ICrit, type IMultiAttack } from "../damage";
 
-export class Archer extends Character
+export class Archer extends Character implements ICritAbility, IMultiAttackAbility
 {
     protected _maxHP = 1080;
     protected _currentHP = 1080;
     protected _armor = 3.5;
 
     readonly power = { min: 116, max: 126 };
-    readonly critMultiplier = 1.6;
-    readonly critChance = 0.5;
-    readonly multiAttackChance = 0.5;
+    readonly crit: ICrit = { multiplier: 1.6, chance: 0.5 };
+    readonly multiAttack: IMultiAttack = { chance: 0.5 };
 
     get name()
     {
@@ -20,23 +20,16 @@ export class Archer extends Character
 
     attack(target: Character): IAttackResult
     {
-        const damages = this.shoot(target);
+        const damage = new AttackDamage(this, target, this.crit);
+        target.takeHit(damage);
 
-        if (Utils.isLucky(this.multiAttackChance))
+        if (Utils.isLucky(this.multiAttack.chance))
         {
-            const followUpDamage = this.shoot(target).attackDamage;
-            damages.attackDamage.addFollowUpDamage(followUpDamage);
+            const followUpDamage = new AttackDamage(this, target, this.crit);
+            damage.addFollowUpDamage(followUpDamage);
+            target.takeHit(followUpDamage);
         }
 
-        return { damages: Object.values(damages) };
-    }
-
-    private shoot(target: Character): ITakeHitResult
-    {
-        const crit = {
-            multiplier: this.critMultiplier,
-            chance: this.critChance
-        };
-        return target.takeHit(this, { crit });
+        return { damages: [damage] };
     }
 }

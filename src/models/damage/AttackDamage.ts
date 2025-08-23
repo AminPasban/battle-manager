@@ -2,7 +2,7 @@ import Utils from "../../utils";
 import type { Character } from "../character";
 import { Damage } from "./Damage";
 import { AttackType, DamageType } from "./enums";
-import type { IAttackSpecialEffects, IDamageMetadata } from "./types";
+import type { IAttackSpecialEffects, ICrit, IDamageMetadata } from "./types";
 
 export class AttackDamage extends Damage
 {
@@ -15,17 +15,17 @@ export class AttackDamage extends Damage
     readonly specialEffects: IAttackSpecialEffects = {};
     readonly followUpDamages: AttackDamage[] = [];
 
-    constructor(source: Character, target: Character, critMulitiplier: number = 0, critChance: number = 0)
+    constructor(source: Character, target: Character, crit?: ICrit)
     {
         super(source, target);
 
         this.amount = Utils.randomInRange(source.power.min, source.power.max);
 
-        if (Utils.isLucky(critChance))
+        if (crit && Utils.isLucky(crit.chance))
         {
             this.attackType = AttackType.Crit;
-            this.amount *= critMulitiplier;
-            this.specialEffects.critMultiplier = critMulitiplier;
+            this.amount *= crit.multiplier;
+            this.specialEffects.critMultiplier = crit.multiplier;
             this.metadata.color = "#CB0404";
         }
 
