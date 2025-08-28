@@ -1,9 +1,10 @@
 import Utils from "../../utils";
-import { Damage, WoundDamage } from "../damage";
+import { AttackDamage, Damage, WoundDamage } from "../damage";
+import type { Effect } from "../effect";
 import { HealRecovery, LifestealRecovery, Recovery } from "../recovery";
-import type { IAttackResult, ICharacterPower } from "./types";
+import type { IAfterAttackResult, IBeforeAttackResult, ICharacterPower, ITakeHitResult, IAttackReport, IBeforeTakeHitResult, IAfterTakeHitResult, IAttackResult } from "./types";
 
-export abstract class Character
+export abstract class Character<DamageType extends Damage = Damage>
 {
     public readonly id: string;
     protected readonly _name: string;
@@ -11,6 +12,7 @@ export abstract class Character
     protected _currentHP: number = 800;
     protected _armor: number = 0;
     readonly power: ICharacterPower = { min: 95, max: 105 };
+    public effect: Effect | null = null;
 
     constructor(name: string)
     {
@@ -32,7 +34,11 @@ export abstract class Character
     }
     abstract get name(): string;
 
-    abstract attack(enemy: Character): IAttackResult;
+    protected abstract onBeforeAttack(): IBeforeAttackResult;
+    protected abstract onAttack(target: Character): IAttackResult<DamageType>;
+    protected abstract onAfterAttack(damage: DamageType): IAfterAttackResult;
+    protected abstract onBeforeTakeHit(): IBeforeTakeHitResult;
+    protected abstract onAfterTakeHit(): IAfterTakeHitResult;
 
     private _adjustHP(amount: number, increase: boolean = true)
     {
@@ -40,23 +46,68 @@ export abstract class Character
         this._currentHP = Utils.clamp(this._currentHP + amount, this.maxHP);
     }
 
-    protected onBeforeTakeHit() { }
-    protected onAfterTakeHit() { }
-
-    takeHit(...damages: Damage[])
+    attack(target: Character): IAttackReport
     {
-        this.onBeforeTakeHit();
+        const beforeAttackResult = this.onBeforeAttack();
+        const attackResult = this.onAttack(target);
+        const targetTakeHitResult = target.takeHit(attackResult.damage);
+        const afterAttackResult = this.onAfterAttack(attackResult.damage);
 
-        for (const dmg of damages)
-            this._adjustHP(dmg.amount, false);
+        const report =
+        {
+            damages: [
+                targetTakeHitResult.damage,
+                ...(attackResult.wounds ?? []),
+                ...(afterAttackResult.wounds ?? [])
+            ],
+            recoveries: [
+                ...(attackResult.recoveries ?? []),
+                ...(afterAttackResult.recoveries ?? [])
+            ],
+            effects: {
+                source: {
+                    beforeAttack: beforeAttackResult.effect,
+                    afterAttack: afterAttackResult.effect
+                },
+                target: targetTakeHitResult.effects
+            }
+        };
 
-        this.onAfterTakeHit();
+        return Utils.pruneEmpty(report);
+    }
+
+    takeHit(damage: Damage): ITakeHitResult
+    {
+        const beforeTakeHitResult = this.onBeforeTakeHit();
+
+        damage.calculate();
+
+        this._adjustHP(damage.amount, false);
+        if (damage instanceof AttackDamage)
+            for (const dmg of damage.followUps)
+                this._adjustHP(dmg.amount, false);
+
+        const afterTakeHitResult = this.onAfterTakeHit();
+
+        return {
+            damage,
+            effects: {
+                beforeTakeHit: beforeTakeHitResult.effect,
+                afterTakeHit: afterTakeHitResult.effect,
+            }
+        };
     }
 
     adjustArmor(amount: number, increase: boolean = true)
     {
         amount *= increase ? 1 : -1;
-        this._armor = Utils.clamp(this._armor + amount, Infinity);
+        this._armor = Utils.clamp(this._armor + amount);
+    }
+    adjustPower(amount: number, increase: boolean = true)
+    {
+        amount *= increase ? 1 : -1;
+        this.power.min = Utils.clamp(this.power.min + amount);
+        this.power.max = Utils.clamp(this.power.max + amount);
     }
 
     reborn()
@@ -83,5 +134,17 @@ export abstract class Character
         const woundDamage = new WoundDamage(this, power, multiplier);
         this._adjustHP(woundDamage.amount, false);
         return woundDamage;
+    }
+
+    receiveEffect(effect: Effect)
+    {
+        this.effect = effect;
+        this.effect.apply();
+    }
+
+    removeEffect()
+    {
+        this.effect?.expire();
+        this.effect = null;
     }
 }

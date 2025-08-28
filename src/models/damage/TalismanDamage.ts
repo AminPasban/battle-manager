@@ -1,5 +1,5 @@
 import { Damage } from "./Damage";
-import type { Character } from "../character";
+import type { Character, ITalismanAbility } from "../character";
 import Utils from "../../utils";
 import { DamageType } from "./enums";
 import type { IDamageMetadata } from "./types";
@@ -7,23 +7,22 @@ import type { IDamageMetadata } from "./types";
 export class TalismanDamage extends Damage
 {
     readonly type: DamageType = DamageType.Talisman;
+    readonly isTriggerd: boolean = false;
+    readonly source: Character & ITalismanAbility;
     readonly metadata: IDamageMetadata = { color: "#7F00FF" };
 
-    readonly amount: number = 0;
-    readonly targetHPAfterDamage: number;
-    readonly isTriggerd: boolean = false;
-
-    constructor(source: Character, target: Character, power: number, chance: number)
+    constructor(source: Character & ITalismanAbility, target: Character)
     {
-        super(source, target);
+        super(target);
+        this.source = source;
 
-        this.targetHPAfterDamage = target.hp;
-
-        if (Utils.isLucky(chance))
+        if (Utils.isLucky(source.talisman.chance))
         {
             this.isTriggerd = true;
-            this.amount = power;
-            this.targetHPAfterDamage = Utils.clamp(this.targetHPBeforeDamage - this.amount, target.maxHP);
+            this.amount = this.source.talisman.power;
+            this.targetHPAfterDamage = Utils.clamp(this.targetHPBeforeDamage - this.amount);
         }
     }
+
+    calculate(): void { }
 }

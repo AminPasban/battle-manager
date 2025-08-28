@@ -1,6 +1,6 @@
-import type { Character, IAttackResult } from "../character";
-import { AttackDamage, TalismanDamage, WoundDamage } from "../damage";
 import type { ISimulateFightsResult } from "../battle-manager";
+import type { Character, IAttackReport } from "../character";
+import { AttackDamage, Damage, TalismanDamage, WoundDamage } from "../damage";
 import { LogItem } from "./LogItem";
 import { LogText } from "./LogText";
 import { type ILoggerOptions, type ILogItemBadge, type ILogItemOptions } from "./types";
@@ -21,12 +21,12 @@ export class Logger
         this.container?.replaceChildren();
     }
 
-    private assertNever(x: never): never
+    private _assertNever(x: never): never
     {
         throw new Error(`Unhandled damage type: ${(x as any)?.type}`);
     }
 
-    private append(...items: LogItem[])
+    private _append(...items: LogItem[])
     {
         if (!this.container) return;
 
@@ -41,48 +41,82 @@ export class Logger
         });
     }
 
+    private _flatDamages(damages: Damage[])
+    {
+        const flatArray = [];
+
+        for (const dmg of damages)
+        {
+            if (!(dmg instanceof AttackDamage) || dmg.followUps.length === 0)
+            {
+                flatArray.push(dmg);
+                continue;
+            }
+
+            const combo = [dmg];
+            flatArray.push(combo);
+            for (const d of dmg.followUps)
+                (d instanceof AttackDamage) ? combo.push(d) : flatArray.push(d);
+        }
+
+        return flatArray;
+    }
+
     logStart(player1: Character, player2: Character)
     {
         const textEl = new LogText().start(player1, player2);
         const logItem = new LogItem(textEl, { centered: true });
-        this.append(logItem);
+        this._append(logItem);
     }
 
     logWinner(player: Character)
     {
         const textEl = new LogText().winner(player);
         const logItem = new LogItem(textEl, { centered: true });
-        this.append(logItem);
+        this._append(logItem);
     }
 
-    logAttack({ damages, recoveries }: IAttackResult)
+    logAttack({ damages, recoveries }: IAttackReport)
     {
+        const flatDamages = this._flatDamages(damages);
         const logItem = new LogItem();
 
-        for (const damage of damages)
+        const getOptions = (damage: Damage): ILogItemOptions =>
         {
-            if (damage instanceof AttackDamage)
+            return { badge: { color: damage.metadata.color, position: "start" } };
+        };
+
+        for (const damage of flatDamages)
+        {
+            if (Array.isArray(damage))
             {
-                const attackDamages = [damage, ...damage.followUpDamages];
-                const textEls = attackDamages.map(dmg => new LogText().attack(dmg));
-                const options: ILogItemOptions[] = attackDamages.map(dmg => ({
-                    badge: { color: dmg.metadata.color, position: "start" }
-                }));
+                const textEls: HTMLSpanElement[] = [];
+                const options: ILogItemOptions[] = [];
+                for (const dmg of damage)
+                {
+                    textEls.push(new LogText().attack(dmg));
+                    options.push(getOptions(dmg));
+                }
                 logItem.appendComboLogLine(textEls, options);
+            }
+            else if (damage instanceof AttackDamage)
+            {
+                const textEl = new LogText().attack(damage);
+                logItem.appendLogLine(textEl, getOptions(damage));
             }
             else if (damage instanceof TalismanDamage)
             {
                 const textEl = new LogText().talisman(damage);
-                logItem.appendLogLine(textEl, { badge: { color: damage.metadata.color, position: "start" } });
+                logItem.appendLogLine(textEl, getOptions(damage));
             }
             else if (damage instanceof WoundDamage)
             {
                 const textEl = new LogText().wound(damage);
-                logItem.appendLogLine(textEl, { badge: { color: damage.metadata.color, position: "start" } });
+                logItem.appendLogLine(textEl, getOptions(damage));
             }
             else
             {
-                this.assertNever(damage.type as never);
+                this._assertNever(damage.type as never);
             }
         }
 
@@ -95,26 +129,26 @@ export class Logger
             }
         }
 
-        this.append(logItem);
+        this._append(logItem);
     }
 
     logSimulate({ stats, fights }: ISimulateFightsResult)
     {
         const logText = new LogText();
 
-        this.append(new LogItem(
+        this._append(new LogItem(
             logText.simulateFights({ stats, fights }),
             { centered: true }
         ));
 
         const badge: ILogItemBadge = { color: "red", position: "both" };
 
-        this.append(new LogItem(
+        this._append(new LogItem(
             logText.simulateStat(stats[0]),
             { centered: true, badge: stats[0].rate > 50 ? badge : undefined }
         ));
 
-        this.append(new LogItem(
+        this._append(new LogItem(
             logText.simulateStat(stats[1]),
             { centered: true, badge: stats[1].rate > 50 ? badge : undefined }
         ));

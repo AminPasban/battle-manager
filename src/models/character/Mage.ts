@@ -1,9 +1,9 @@
-import { AttackDamage, TalismanDamage, type Damage, type ITalisman } from "../damage";
+import { AttackDamage, TalismanDamage, WoundDamage, type ITalisman } from "../damage";
 import type { Recovery } from "../recovery";
 import { Character } from "./Character";
-import type { IAttackResult, ITalismanAbility } from "./types";
+import type { IAfterAttackResult, IAfterTakeHitResult, IAttackResult, IBeforeTakeHitResult, ITalismanAbility } from "./types";
 
-export class Mage extends Character implements ITalismanAbility
+export class Mage extends Character<AttackDamage> implements ITalismanAbility
 {
     protected _maxHP = 980;
     protected _currentHP = 980;
@@ -19,23 +19,26 @@ export class Mage extends Character implements ITalismanAbility
         return `🧙‍♂️${this._name}`;
     }
 
-    attack(target: Character): IAttackResult
+    protected onBeforeAttack(): IAfterAttackResult
     {
-        const damages: Damage[] = [];
-        const recoveries: Recovery[] = [];
+        return {};
+    }
 
-        const attackDamage = new AttackDamage(this, target);
-        damages.push(attackDamage);
-        target.takeHit(attackDamage);
+    onAttack(target: Character): IAttackResult<AttackDamage>
+    {
+        const recoveries: Recovery[] = [];
+        const wounds: WoundDamage[] = [];
+
+        const damage = new AttackDamage(this, target);
 
         const canTriggerTalisman = this.hp > this.talisman.power * this.talismanWoundMultiplier;
-        const talismanDamage = new TalismanDamage(this, target, this.talisman.power, this.talisman.chance);
+        const talismanDamage = new TalismanDamage(this, target);
 
         if (canTriggerTalisman && talismanDamage.isTriggerd)
         {
+            damage.addFollowUp(talismanDamage);
             const woundDamage = this.wound(this.talisman.power, this.talismanWoundMultiplier);
-            damages.push(talismanDamage, woundDamage);
-            target.takeHit(talismanDamage);
+            wounds.push(woundDamage);
         }
         else
         {
@@ -43,6 +46,21 @@ export class Mage extends Character implements ITalismanAbility
             recoveries.push(heal);
         }
 
-        return { damages, recoveries };
+        return { damage, recoveries, wounds };
+    }
+
+    protected onAfterAttack(): IAfterAttackResult
+    {
+        return {};
+    }
+
+    protected onBeforeTakeHit(): IBeforeTakeHitResult
+    {
+        return {};
+    }
+
+    protected onAfterTakeHit(): IAfterTakeHitResult
+    {
+        return {};
     }
 }

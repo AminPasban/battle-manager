@@ -10,7 +10,7 @@ export default class Utils
         return chance >= Math.random();
     }
 
-    static clamp(value: number, max: number, min: number = 0): number
+    static clamp(value: number, max: number = Infinity, min: number = 0): number
     {
         return Math.max(min, Math.min(value, max));
     }
@@ -26,4 +26,34 @@ export default class Utils
         }
         return id;
     }
+
+    static pruneEmpty<T extends Record<string, any>>(obj: T): T
+    {
+        for (const key in obj)
+        {
+            const value = obj[key];
+
+            if (value == null)
+            {
+                delete obj[key];
+                continue;
+            }
+
+            if (Array.isArray(value))
+            {
+                obj[key] = value.filter((x: unknown) => x);
+                continue;
+            }
+
+            if (typeof value === "object")
+            {
+                this.pruneEmpty(value);
+
+                if (Object.keys(value).length === 0)
+                    delete obj[key];
+            }
+        }
+
+        return obj;
+    };
 }

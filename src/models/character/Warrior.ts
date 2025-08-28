@@ -1,10 +1,10 @@
-import { Character } from "./Character";
 import { AttackDamage, AttackType, type ICrit } from "../damage";
-import type { Recovery } from "../recovery";
+import { Character } from "./Character";
 
-import type { IAttackResult, ICritAbility } from "./types";
+import { ArmorEffect } from "../effect/ArmorEffect";
+import type { IAfterAttackResult, IAfterTakeHitResult, IAttackResult, IBeforeAttackResult, IBeforeTakeHitResult, ICritAbility } from "./types";
 
-export class Warrior extends Character implements ICritAbility
+export class Warrior extends Character<AttackDamage> implements ICritAbility
 {
     protected _maxHP = 1200;
     protected _currentHP = 1200;
@@ -19,19 +19,38 @@ export class Warrior extends Character implements ICritAbility
         return `⚔️${this._name}`;
     }
 
-    attack(target: Character): IAttackResult
+    protected onBeforeAttack(): IBeforeAttackResult
     {
-        const damage = new AttackDamage(this, target, this.crit);
-        target.takeHit(damage);
+        return {};
+    }
 
-        const recoveries: Recovery[] = [];
+    onAttack(target: Character): IAttackResult<AttackDamage>
+    {
+        const damage = new AttackDamage(this, target);
+        return { damage };
+    }
 
+    protected onAfterAttack(damage: AttackDamage): IAfterAttackResult
+    {
         if (damage.attackType === AttackType.Crit)
         {
             const recovery = this.lifesteal(damage.amount, this.lifestealMultiplier);
-            recoveries.push(recovery);
+            return { recoveries: [recovery] };
         }
 
-        return { damages: [damage], recoveries };
+        return {};
+    }
+
+    protected onBeforeTakeHit(): IBeforeTakeHitResult
+    {
+        const effect = new ArmorEffect(this, 7);
+        this.receiveEffect(effect);
+        return { effect };
+    }
+
+    protected onAfterTakeHit(): IAfterTakeHitResult
+    {
+        this.removeEffect();
+        return {};
     }
 }

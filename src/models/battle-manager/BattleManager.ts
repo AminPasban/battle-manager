@@ -23,9 +23,11 @@ export class BattleManager
 
         while (true)
         {
-            const result = attacker.attack(defender);
-            logger?.logAttack(result);
+            const report = attacker.attack(defender);
+            logger?.logAttack(report);
 
+            console.log(attacker.name, report);
+            
             if (defender.hp <= 0)
             {
                 logger?.logWinner(attacker);

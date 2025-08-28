@@ -1,16 +1,55 @@
-import type { AttackDamage, Damage, ICrit, IMultiAttack, ITalisman, TalismanDamage } from "../damage";
+import type { Damage, ICrit, IMultiAttack, ITalisman, WoundDamage } from "../damage";
+import type { Effect } from "../effect";
 import type { Recovery } from "../recovery";
 
-export interface IAttackResult
+export interface IBeforeAttackResult
+{
+    effect?: Effect;
+}
+export interface IAttackResult<T>
+{
+    damage: T;
+    recoveries?: Recovery[];
+    wounds?: WoundDamage[];
+}
+export interface IAfterAttackResult
+{
+    recoveries?: Recovery[];
+    wounds?: WoundDamage[];
+    effect?: Effect;
+}
+
+export interface IBeforeTakeHitResult
+{
+    effect?: Effect;
+}
+export interface ITakeHitResult
+{
+    damage: Damage;
+    effects?: {
+        beforeTakeHit?: Effect;
+        afterTakeHit?: Effect;
+    };
+}
+export interface IAfterTakeHitResult
+{
+    effect?: Effect;
+}
+
+export interface IAttackReport
 {
     damages: Damage[],
     recoveries?: Recovery[];
-}
-
-export interface ITakeHitResult
-{
-    attackDamage: AttackDamage;
-    talismanDamage?: TalismanDamage;
+    effects?: {
+        source?: {
+            beforeAttack?: Effect;
+            afterAttack?: Effect;
+        },
+        target?: {
+            beforeTakeHit?: Effect;
+            afterTakeHit?: Effect;
+        },
+    };
 }
 
 export interface ICritAbility
@@ -31,6 +70,6 @@ export interface IMultiAttackAbility
 
 export interface ICharacterPower
 {
-    readonly min: number;
-    readonly max: number;
+    min: number;
+    max: number;
 }

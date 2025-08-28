@@ -6,20 +6,22 @@ export abstract class Damage
 {
     protected static readonly damageReductionPerArmor = 10;
 
-    readonly abstract amount: number;
     readonly abstract type: DamageType;
     readonly abstract metadata: IDamageMetadata;
-    readonly abstract targetHPAfterDamage: number;
-    readonly source: Character;
+    readonly abstract source: Character;
     readonly target: Character;
-    readonly targetHPBeforeDamage: number;
+    public amount: number = 0;
+    public targetHPBeforeDamage: number;
+    public targetHPAfterDamage: number;
 
-    constructor(source: Character, target: Character)
+    constructor(target: Character)
     {
-        this.source = source;
         this.target = target;
         this.targetHPBeforeDamage = target.hp;
+        this.targetHPAfterDamage = target.hp;
     }
+
+    abstract calculate(): void;
 
     static getArmorReduction(armor: number): number
     {

@@ -7,16 +7,17 @@ import type { IDamageMetadata } from "./types";
 export class WoundDamage extends Damage
 {
     readonly type: DamageType = DamageType.Wound;
+    readonly source: Character;
     readonly metadata: IDamageMetadata = { color: "#DC5F00" };
 
-    readonly amount: number = 0;
-    readonly targetHPAfterDamage: number;
-
-    constructor(character: Character, power: number, multiplier: number)
+    constructor(target: Character, power: number, multiplier: number)
     {
-        super(character, character);
+        super(target);
+        this.source = target;
 
         this.amount = Math.round(power * multiplier);
-        this.targetHPAfterDamage = Utils.clamp(this.targetHPBeforeDamage - this.amount, character.maxHP);
+        this.targetHPAfterDamage = Utils.clamp(this.targetHPBeforeDamage - this.amount);
     }
+
+    calculate(): void { }
 }
