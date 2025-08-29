@@ -1,8 +1,10 @@
 import { Damage } from "./Damage";
-import type { Character } from "@/character";
+import { DamageType } from "../enums";
+import type { IDamageMetadata } from "../types";
+// character
+import { Character } from "@/character";
+// utils
 import Utils from "@/utils";
-import { DamageType } from "./enums";
-import type { IDamageMetadata } from "./types";
 
 export class WoundDamage extends Damage
 {

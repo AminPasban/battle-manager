@@ -1,5 +1,8 @@
-import { Recovery, RecoveryType } from "./Recovery";
-import type { Character } from "@/character";
+import { Recovery } from "./Recovery";
+import { RecoveryType } from "../enums";
+// character
+import { Character } from "@/character";
+// utils
 import Utils from "@/utils";
 
 export class LifestealRecovery extends Recovery

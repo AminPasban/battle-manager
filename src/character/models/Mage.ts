@@ -1,5 +1,5 @@
 import { Character } from "./Character";
-import type { IAttackResult, ITalismanAbility } from "./types";
+import type { IAttackResult, ITalismanAbility } from "../types";
 // damage
 import { AttackDamage, TalismanDamage, WoundDamage } from "@/damage";
 import type { ITalisman } from "@/damage/types";

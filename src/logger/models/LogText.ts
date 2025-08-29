@@ -1,4 +1,4 @@
-import type { ILogTextEl } from "./types";
+import type { ILogTextEl } from "../types";
 // battle manager
 import type { ISimulateFightsResult, ISimulateFightsStat } from "@/battle-manager/types";
 // character

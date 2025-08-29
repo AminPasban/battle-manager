@@ -1,11 +1,5 @@
 import { Character } from "./Character";
-import type {
-    IAfterAttackResult,
-    IAfterTakeHitResult,
-    IAttackResult,
-    IBeforeTakeHitResult,
-    ICritAbility
-} from "./types";
+import type { IAfterAttackResult, IAfterTakeHitResult, IAttackResult, IBeforeTakeHitResult, ICritAbility } from "../types";
 // damage
 import { AttackDamage } from "@/damage";
 import { AttackType } from "@/damage/enums";

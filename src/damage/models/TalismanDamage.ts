@@ -1,8 +1,11 @@
 import { Damage } from "./Damage";
-import type { Character, ITalismanAbility } from "@/character";
+import { DamageType } from "../enums";
+import type { IDamageMetadata } from "../types";
+// character
+import { Character } from "@/character";
+import type { ITalismanAbility } from "@/character/types";
+// utils
 import Utils from "@/utils";
-import { DamageType } from "./enums";
-import type { IDamageMetadata } from "./types";
 
 export class TalismanDamage extends Damage
 {

@@ -1,2 +1,2 @@
-export * from "./Effect";
-export * from "./ArmorEffect";
+export * from "./models/Effect";
+export * from "./models/ArmorEffect";

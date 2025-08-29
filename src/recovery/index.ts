@@ -1,3 +1,3 @@
-export * from "./Recovery";
-export * from "./HealRecovery";
-export * from "./LifestealRecovery";
+export * from "./models/Recovery";
+export * from "./models/HealRecovery";
+export * from "./models/LifestealRecovery";

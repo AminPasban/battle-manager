@@ -1,6 +1,6 @@
 import { LogItem } from "./LogItem";
 import { LogText } from "./LogText";
-import type { ILoggerOptions, ILogItemBadge, ILogItemOptions } from "./types";
+import type { ILoggerOptions, ILogItemBadge, ILogItemOptions } from "../types";
 // battle manager
 import type { ISimulateFightsResult } from "@/battle-manager/types";
 // character

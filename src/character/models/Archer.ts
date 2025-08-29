@@ -1,5 +1,5 @@
 import { Character } from "./Character";
-import type { IAttackResult, ICritAbility, IMultiAttackAbility } from "./types";
+import type { IAttackResult, ICritAbility, IMultiAttackAbility } from "../types";
 // damage
 import { AttackDamage } from "@/damage";
 import type { ICrit, IMultiAttack } from "@/damage/types";

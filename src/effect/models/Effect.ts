@@ -1,4 +1,4 @@
-import type { EffectTiming } from "./enums";
+import type { EffectTiming } from "../enums";
 // character
 import type { Character } from "@/character";
 

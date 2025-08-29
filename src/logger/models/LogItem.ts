@@ -1,4 +1,4 @@
-import type { ILogItemOptions, ILogTextEl } from "./types";
+import type { ILogItemOptions, ILogTextEl } from "../types";
 
 export class LogItem
 {

@@ -1,15 +1,7 @@
+import type { RecoveryType } from "../enums";
+import type { RecoveryMetadata } from "../types";
+// character
 import type { Character } from "@/character";
-
-export enum RecoveryType
-{
-    Heal = "Heal",
-    Lifesteal = "Lifesteal",
-}
-
-export interface RecoveryMetadata
-{
-    color: string;
-}
 
 export abstract class Recovery
 {

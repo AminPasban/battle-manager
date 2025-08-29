@@ -1,3 +1,3 @@
-export * from "./Logger";
-export * from "./LogItem";
-export * from "./LogText";
+export * from "./models/Logger";
+export * from "./models/LogItem";
+export * from "./models/LogText";

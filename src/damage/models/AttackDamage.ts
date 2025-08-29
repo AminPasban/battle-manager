@@ -1,8 +1,11 @@
-import Utils from "@/utils";
-import type { Character, ICritAbility } from "@/character";
 import { Damage } from "./Damage";
-import { AttackType, DamageType } from "./enums";
-import type { IAttackSpecialEffects, IDamageMetadata } from "./types";
+import { AttackType, DamageType } from "../enums";
+import type { IAttackSpecialEffects, IDamageMetadata } from "../types";
+// character
+import type { Character } from "@/character";
+import type { ICritAbility } from "@/character/types";
+// utils
+import Utils from "@/utils";
 
 export class AttackDamage extends Damage
 {
