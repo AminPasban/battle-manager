@@ -1,8 +1,12 @@
-import type { ISimulateFightsResult, ISimulateFightsStat } from "../battle-manager";
-import type { Character } from "../character";
-import type { AttackDamage, TalismanDamage, WoundDamage } from "../damage";
-import { type Recovery } from "../recovery";
 import type { ILogTextEl } from "./types";
+// battle manager
+import type { ISimulateFightsResult, ISimulateFightsStat } from "@/battle-manager/types";
+// character
+import type { Character } from "@/character";
+// damage
+import type { AttackDamage, TalismanDamage, WoundDamage } from "@/damage";
+// recovery
+import { type Recovery } from "@/recovery";
 
 export class LogText
 {

@@ -1,9 +1,13 @@
-import type { ISimulateFightsResult } from "../battle-manager";
-import type { Character, IAttackReport } from "../character";
-import { AttackDamage, Damage, TalismanDamage, WoundDamage } from "../damage";
 import { LogItem } from "./LogItem";
 import { LogText } from "./LogText";
-import { type ILoggerOptions, type ILogItemBadge, type ILogItemOptions } from "./types";
+import type { ILoggerOptions, ILogItemBadge, ILogItemOptions } from "./types";
+// battle manager
+import type { ISimulateFightsResult } from "@/battle-manager/types";
+// character
+import { Character } from "@/character";
+import type { IAttackReport } from "@/character/types";
+// damage
+import { AttackDamage, Damage, TalismanDamage, WoundDamage } from "@/damage";
 
 export class Logger
 {

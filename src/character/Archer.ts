@@ -1,10 +1,14 @@
-import Utils from "../../utils";
-import { AttackDamage, type ICrit, type IMultiAttack } from "../damage";
 import { Character } from "./Character";
-import type { IAfterAttackResult, IAttackResult, IBeforeAttackResult, IBeforeTakeHitResult, ICritAbility, IMultiAttackAbility } from "./types";
+import type { IAttackResult, ICritAbility, IMultiAttackAbility } from "./types";
+// damage
+import { AttackDamage } from "@/damage";
+import type { ICrit, IMultiAttack } from "@/damage/types";
+// utils
+import Utils from "@/utils";
 
 export class Archer extends Character<AttackDamage> implements ICritAbility, IMultiAttackAbility
 {
+    protected namePrefix: string = "🏹";
     protected _maxHP = 1080;
     protected _currentHP = 1080;
     protected _armor = 3.5;
@@ -12,11 +16,6 @@ export class Archer extends Character<AttackDamage> implements ICritAbility, IMu
     readonly power = { min: 116, max: 126 };
     readonly crit: ICrit = { multiplier: 1.6, chance: 0.5 };
     readonly multiAttack: IMultiAttack = { chance: 1 };
-
-    get name()
-    {
-        return `🏹${this._name}`;
-    }
 
     onAttack(target: Character): IAttackResult<AttackDamage>
     {
@@ -29,22 +28,5 @@ export class Archer extends Character<AttackDamage> implements ICritAbility, IMu
         }
 
         return { damage };
-    }
-
-    protected onBeforeAttack(): IBeforeAttackResult
-    {
-        return {};
-    }
-    protected onBeforeTakeHit(): IBeforeTakeHitResult
-    {
-        return {};
-    }
-    protected onAfterTakeHit(): IAfterAttackResult
-    {
-        return {};
-    }
-    protected onAfterAttack(): IAfterAttackResult
-    {
-        return {};
     }
 }

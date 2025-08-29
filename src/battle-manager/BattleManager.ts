@@ -1,5 +1,5 @@
-import type { Character } from "../character";
-import { Logger } from "../logger";
+import type { Character } from "@/character";
+import { Logger } from "@/logger";
 
 export class BattleManager
 {

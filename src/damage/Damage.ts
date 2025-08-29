@@ -1,4 +1,4 @@
-import type { Character } from "../character";
+import type { Character } from "@/character";
 import type { DamageType } from "./enums";
 import type { IDamageMetadata } from "./types";
 

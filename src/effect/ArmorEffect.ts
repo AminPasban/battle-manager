@@ -1,11 +1,11 @@
 import { Effect } from "./Effect";
 
 export class ArmorEffect extends Effect {
-    apply(): void
+    onApply(): void
     {
         this.target.adjustArmor(this.value, this.isPositive);
     }
-    expire(): void
+    onExpire(): void
     {
         this.target.adjustArmor(this.value, !this.isPositive);
     }

@@ -1,13 +1,20 @@
-import Utils from "../../utils";
-import { AttackDamage, Damage, WoundDamage } from "../damage";
-import type { Effect } from "../effect";
-import { HealRecovery, LifestealRecovery, Recovery } from "../recovery";
 import type { IAfterAttackResult, IBeforeAttackResult, ICharacterPower, ITakeHitResult, IAttackReport, IBeforeTakeHitResult, IAfterTakeHitResult, IAttackResult } from "./types";
+// damage
+import { AttackDamage, Damage, WoundDamage } from "@/damage";
+// recovery
+import { HealRecovery, LifestealRecovery, Recovery } from "@/recovery";
+// effect
+import { Effect } from "@/effect";
+import { EffectTiming } from "@/effect/enums";
+// utils
+import Utils from "@/utils";
 
 export abstract class Character<DamageType extends Damage = Damage>
 {
+    readonly #name: string;
+    protected readonly abstract namePrefix: string;
+
     public readonly id: string;
-    protected readonly _name: string;
     protected _maxHP: number = 800;
     protected _currentHP: number = 800;
     protected _armor: number = 0;
@@ -17,9 +24,13 @@ export abstract class Character<DamageType extends Damage = Damage>
     constructor(name: string)
     {
         this.id = Utils.generateId();
-        this._name = name;
+        this.#name = name;
     }
 
+    get name()
+    {
+        return `${this.namePrefix} ${this.#name}`;
+    }
     get hp()
     {
         return this._currentHP;
@@ -32,15 +43,15 @@ export abstract class Character<DamageType extends Damage = Damage>
     {
         return this._armor;
     }
-    abstract get name(): string;
 
-    protected abstract onBeforeAttack(): IBeforeAttackResult;
     protected abstract onAttack(target: Character): IAttackResult<DamageType>;
-    protected abstract onAfterAttack(damage: DamageType): IAfterAttackResult;
-    protected abstract onBeforeTakeHit(): IBeforeTakeHitResult;
-    protected abstract onAfterTakeHit(): IAfterTakeHitResult;
 
-    private _adjustHP(amount: number, increase: boolean = true)
+    protected onBeforeAttack(): IBeforeAttackResult | void { }
+    protected onAfterAttack(_damage: DamageType): IAfterAttackResult | void { }
+    protected onBeforeTakeHit(): IBeforeTakeHitResult | void { }
+    protected onAfterTakeHit(): IAfterTakeHitResult | void { }
+
+    #adjustHP(amount: number, increase: boolean = true)
     {
         amount *= increase ? 1 : -1;
         this._currentHP = Utils.clamp(this._currentHP + amount, this.maxHP);
@@ -48,29 +59,27 @@ export abstract class Character<DamageType extends Damage = Damage>
 
     attack(target: Character): IAttackReport
     {
-        const beforeAttackResult = this.onBeforeAttack();
+        this.onBeforeAttack();
+        this.#checkEffect(EffectTiming.BeforeAttack);
+
         const attackResult = this.onAttack(target);
         const targetTakeHitResult = target.takeHit(attackResult.damage);
+
         const afterAttackResult = this.onAfterAttack(attackResult.damage);
+        this.#checkEffect(EffectTiming.AffterAttack);
 
         const report =
         {
             damages: [
                 targetTakeHitResult.damage,
-                ...(attackResult.wounds ?? []),
-                ...(afterAttackResult.wounds ?? [])
+                ...(attackResult?.wounds ?? []),
+                ...(afterAttackResult?.wounds ?? [])
             ],
             recoveries: [
-                ...(attackResult.recoveries ?? []),
-                ...(afterAttackResult.recoveries ?? [])
+                ...(attackResult?.recoveries ?? []),
+                ...(afterAttackResult?.recoveries ?? [])
             ],
-            effects: {
-                source: {
-                    beforeAttack: beforeAttackResult.effect,
-                    afterAttack: afterAttackResult.effect
-                },
-                target: targetTakeHitResult.effects
-            }
+            effects: []
         };
 
         return Utils.pruneEmpty(report);
@@ -78,24 +87,20 @@ export abstract class Character<DamageType extends Damage = Damage>
 
     takeHit(damage: Damage): ITakeHitResult
     {
-        const beforeTakeHitResult = this.onBeforeTakeHit();
+        this.onBeforeTakeHit();
+        this.#checkEffect(EffectTiming.BeforeTakeHit);
 
         damage.calculate();
 
-        this._adjustHP(damage.amount, false);
+        this.#adjustHP(damage.amount, false);
         if (damage instanceof AttackDamage)
             for (const dmg of damage.followUps)
-                this._adjustHP(dmg.amount, false);
+                this.#adjustHP(dmg.amount, false);
 
-        const afterTakeHitResult = this.onAfterTakeHit();
+        this.onAfterTakeHit();
+        this.#checkEffect(EffectTiming.AffterTakeHit);
 
-        return {
-            damage,
-            effects: {
-                beforeTakeHit: beforeTakeHitResult.effect,
-                afterTakeHit: afterTakeHitResult.effect,
-            }
-        };
+        return { damage };
     }
 
     adjustArmor(amount: number, increase: boolean = true)
@@ -118,33 +123,42 @@ export abstract class Character<DamageType extends Damage = Damage>
     heal(multiplier: number): Recovery
     {
         const recovery = new HealRecovery(this, multiplier);
-        this._adjustHP(recovery.amount);
+        this.#adjustHP(recovery.amount);
         return recovery;
     }
 
     lifesteal(damage: number, multiplier: number): Recovery
     {
         const recovery = new LifestealRecovery(this, damage, multiplier);
-        this._adjustHP(recovery.amount);
+        this.#adjustHP(recovery.amount);
         return recovery;
     }
 
     wound(power: number, multiplier: number)
     {
         const woundDamage = new WoundDamage(this, power, multiplier);
-        this._adjustHP(woundDamage.amount, false);
+        this.#adjustHP(woundDamage.amount, false);
         return woundDamage;
     }
 
     receiveEffect(effect: Effect)
     {
         this.effect = effect;
-        this.effect.apply();
     }
 
     removeEffect()
     {
-        this.effect?.expire();
-        this.effect = null;
+        const isExpired = this.effect?.expire();
+
+        if (isExpired)
+            this.effect = null;
+    }
+
+    #checkEffect(timing: EffectTiming)
+    {
+        if (this.effect?.applyTiming === timing)
+            this.effect.apply();
+        else if (this.effect?.expireTiming === timing)
+            this.removeEffect();
     }
 }

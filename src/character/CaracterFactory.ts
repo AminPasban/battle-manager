@@ -1,7 +1,6 @@
 import { Warrior } from "./Warrior";
 import { Mage } from "./Mage";
 import { Archer } from "./Archer";
-
 import { CharacterType } from "./enums";
 
 export class CharacterFactory

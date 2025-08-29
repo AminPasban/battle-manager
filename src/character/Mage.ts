@@ -1,10 +1,14 @@
-import { AttackDamage, TalismanDamage, WoundDamage, type ITalisman } from "../damage";
-import type { Recovery } from "../recovery";
 import { Character } from "./Character";
-import type { IAfterAttackResult, IAfterTakeHitResult, IAttackResult, IBeforeTakeHitResult, ITalismanAbility } from "./types";
+import type { IAttackResult, ITalismanAbility } from "./types";
+// damage
+import { AttackDamage, TalismanDamage, WoundDamage } from "@/damage";
+import type { ITalisman } from "@/damage/types";
+// recovery
+import type { Recovery } from "@/recovery";
 
 export class Mage extends Character<AttackDamage> implements ITalismanAbility
 {
+    protected namePrefix = "🧙‍♂️";
     protected _maxHP = 980;
     protected _currentHP = 980;
     protected _armor = 2.5;
@@ -13,16 +17,6 @@ export class Mage extends Character<AttackDamage> implements ITalismanAbility
     readonly talisman: ITalisman = { power: 155, chance: 0.35 };
     readonly talismanWoundMultiplier = 0.25;
     readonly healMultiplier = 0.05;
-
-    get name()
-    {
-        return `🧙‍♂️${this._name}`;
-    }
-
-    protected onBeforeAttack(): IAfterAttackResult
-    {
-        return {};
-    }
 
     onAttack(target: Character): IAttackResult<AttackDamage>
     {
@@ -47,20 +41,5 @@ export class Mage extends Character<AttackDamage> implements ITalismanAbility
         }
 
         return { damage, recoveries, wounds };
-    }
-
-    protected onAfterAttack(): IAfterAttackResult
-    {
-        return {};
-    }
-
-    protected onBeforeTakeHit(): IBeforeTakeHitResult
-    {
-        return {};
-    }
-
-    protected onAfterTakeHit(): IAfterTakeHitResult
-    {
-        return {};
     }
 }

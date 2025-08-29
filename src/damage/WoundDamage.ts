@@ -1,6 +1,6 @@
 import { Damage } from "./Damage";
-import type { Character } from "../character";
-import Utils from "../../utils";
+import type { Character } from "@/character";
+import Utils from "@/utils";
 import { DamageType } from "./enums";
 import type { IDamageMetadata } from "./types";
 

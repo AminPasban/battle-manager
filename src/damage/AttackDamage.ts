@@ -1,5 +1,5 @@
-import Utils from "../../utils";
-import type { Character, ICritAbility } from "../character";
+import Utils from "@/utils";
+import type { Character, ICritAbility } from "@/character";
 import { Damage } from "./Damage";
 import { AttackType, DamageType } from "./enums";
 import type { IAttackSpecialEffects, IDamageMetadata } from "./types";

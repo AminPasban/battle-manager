@@ -1,6 +1,7 @@
-import { BattleManager } from "./models/battle-manager/BattleManager";
-import { CharacterFactory, CharacterType } from "./models/character";
-import { Logger } from "./models/logger";
+import { BattleManager } from "./battle-manager/BattleManager";
+import { CharacterFactory } from "./character";
+import { CharacterType } from "./character/enums";
+import { Logger } from "./logger";
 
 const c1 = CharacterFactory.new(CharacterType.Warrior, "Bahram");
 const c2 = CharacterFactory.new(CharacterType.Mage, "Merlin");
