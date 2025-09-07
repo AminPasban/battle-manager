@@ -1,12 +1,13 @@
-export interface ISimulateFightsStat
+export interface ISimulationFighterStats
 {
+    id: string;
     name: string;
     wins: number;
     rate: number;
 }
 
-export interface ISimulateFightsResult
+export interface ISimulationSummary
 {
     fights: number;
-    stats: ISimulateFightsStat[];
+    stats: ISimulationFighterStats[];
 }

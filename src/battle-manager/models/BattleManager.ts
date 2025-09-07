@@ -1,5 +1,8 @@
-import type { Character } from "@/character";
+// character
+import { Character } from "@/character";
+// logger
 import { Logger } from "@/logger";
+import type { ISimulationSummary } from "../types";
 
 export class BattleManager
 {
@@ -26,8 +29,6 @@ export class BattleManager
             const report = attacker.attack(defender);
             logger?.logAttack(report);
 
-            console.log(attacker.name, report);
-            
             if (defender.hp <= 0)
             {
                 logger?.logWinner(attacker);
@@ -40,11 +41,14 @@ export class BattleManager
 
     simulateFights(fights: number, logger?: Logger)
     {
-        const [c1, c2] = [this.player1, this.player2].map(({ name }) => ({ name, wins: 0, rate: 0 }));
+        const [c1, c2] = [this.player1, this.player2].map(({ id, name }) =>
+        {
+            return { id, name, wins: 0, rate: 0 };
+        });
 
         for (let i = 0; i < fights; i++)
         {
-            const winner = c1.name === this.fight().winner.name ? c1 : c2;
+            const winner = c1.id === this.fight().winner.id ? c1 : c2;
             winner.wins += 1;
             this.reset();
         }
@@ -52,7 +56,9 @@ export class BattleManager
         c1.rate = +(c1.wins * 100 / fights).toFixed(1);
         c2.rate = +(c2.wins * 100 / fights).toFixed(1);
 
-        logger?.logSimulate({ fights, stats: [c1, c2] });
+        const summary: ISimulationSummary = { fights, stats: [c1, c2] };
+        logger?.logSimulation(summary);
+        return summary;
     }
 
     reset()

@@ -1,21 +1,27 @@
 import { Character } from "./Character";
-import type { IAttackResult, ICritAbility, IMultiAttackAbility } from "../types";
+import { CharacterBasics } from "./CharacterBasics";
+import type { IAfterAttackResult, IAttackResult, ICritAbility, IMultiAttackAbility } from "../types";
 // damage
 import { AttackDamage } from "@/damage";
+import { AttackType } from "@/damage/enums";
 import type { ICrit, IMultiAttack } from "@/damage/types";
+// effects
+import { PowerEffect } from "@/effect";
+import { EffectTiming } from "@/effect/enums";
 // utils
 import Utils from "@/utils";
 
 export class Archer extends Character<AttackDamage> implements ICritAbility, IMultiAttackAbility
 {
     protected namePrefix: string = "🏹";
-    protected _maxHP = 1080;
-    protected _currentHP = 1080;
-    protected _armor = 3.5;
 
-    readonly power = { min: 116, max: 126 };
     readonly crit: ICrit = { multiplier: 1.6, chance: 0.5 };
-    readonly multiAttack: IMultiAttack = { chance: 1 };
+    readonly multiAttack: IMultiAttack = { chance: 0.5 };
+
+    protected initBasics(): CharacterBasics
+    {
+        return new CharacterBasics(1080, 3.5, { min: 116, max: 126 });
+    }
 
     onAttack(target: Character): IAttackResult<AttackDamage>
     {
@@ -28,5 +34,19 @@ export class Archer extends Character<AttackDamage> implements ICritAbility, IMu
         }
 
         return { damage };
+    }
+
+    protected onAfterTakeHit(damage: AttackDamage): IAfterAttackResult | void
+    {
+        if (damage instanceof AttackDamage && damage.attackType === AttackType.Crit)
+        {
+            const effect = new PowerEffect(
+                this,
+                75,
+                EffectTiming.AfterTakeHit,
+                EffectTiming.AfterAttack
+            );
+            this.receiveEffect(effect);
+        }
     }
 }

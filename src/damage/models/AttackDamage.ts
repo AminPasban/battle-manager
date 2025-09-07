@@ -47,17 +47,17 @@ export class AttackDamage extends Damage
         for (const dmg of this.followUps)
         {
             dmg.calculate();
-            this._calculateFollowUp(dmg);
+            this.#calculateFollowUp(dmg);
         }
     }
 
     addFollowUp(damage: Damage)
     {
-        this._calculateFollowUp(damage);
+        this.#calculateFollowUp(damage);
         this.followUps.push(damage);
     }
 
-    private _calculateFollowUp(damage: Damage)
+    #calculateFollowUp(damage: Damage)
     {
         damage.targetHPBeforeDamage = this.targetHPAfterDamage;
         damage.targetHPAfterDamage = Utils.clamp(this.targetHPAfterDamage - damage.amount);

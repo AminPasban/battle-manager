@@ -1,13 +1,18 @@
+import { LogGroup } from "./LogGroup";
 import { LogItem } from "./LogItem";
+import { LogLine } from "./LogLine";
 import { LogText } from "./LogText";
-import type { ILoggerOptions, ILogItemBadge, ILogItemOptions } from "../types";
+import { LogBadgePosition } from "../enum";
+import type { ILoggerOptions } from "../types";
 // battle manager
-import type { ISimulateFightsResult } from "@/battle-manager/types";
+import type { ISimulationSummary } from "@/battle-manager/types";
 // character
 import { Character } from "@/character";
 import type { IAttackReport } from "@/character/types";
 // damage
-import { AttackDamage, Damage, TalismanDamage, WoundDamage } from "@/damage";
+import { DamageUtils } from "@/damage/utils";
+// effect
+import { EffectTiming } from "@/effect/enums";
 
 export class Logger
 {
@@ -16,7 +21,7 @@ export class Logger
 
     constructor(opts: ILoggerOptions = {})
     {
-        this.container = opts.container ?? document.getElementById("log");
+        this.container = opts.container ?? this.container;
         this.autoScroll = opts.autoScroll ?? true;
     }
 
@@ -25,12 +30,7 @@ export class Logger
         this.container?.replaceChildren();
     }
 
-    private _assertNever(x: never): never
-    {
-        throw new Error(`Unhandled damage type: ${(x as any)?.type}`);
-    }
-
-    private _append(...items: LogItem[])
+    #append(...items: (LogItem | LogGroup)[])
     {
         if (!this.container) return;
 
@@ -45,116 +45,71 @@ export class Logger
         });
     }
 
-    private _flatDamages(damages: Damage[])
-    {
-        const flatArray = [];
-
-        for (const dmg of damages)
-        {
-            if (!(dmg instanceof AttackDamage) || dmg.followUps.length === 0)
-            {
-                flatArray.push(dmg);
-                continue;
-            }
-
-            const combo = [dmg];
-            flatArray.push(combo);
-            for (const d of dmg.followUps)
-                (d instanceof AttackDamage) ? combo.push(d) : flatArray.push(d);
-        }
-
-        return flatArray;
-    }
-
     logStart(player1: Character, player2: Character)
     {
-        const textEl = new LogText().start(player1, player2);
-        const logItem = new LogItem(textEl, { centered: true });
-        this._append(logItem);
+        const logText = new LogText().start(player1, player2);
+        const logLine = new LogLine(logText, { centered: true });
+        const logItem = new LogItem(logLine);
+        this.#append(logItem);
     }
 
     logWinner(player: Character)
     {
-        const textEl = new LogText().winner(player);
-        const logItem = new LogItem(textEl, { centered: true });
-        this._append(logItem);
+        const logText = new LogText().winner(player);
+        const logLine = new LogLine(logText, { centered: true });
+        const logItem = new LogItem(logLine);
+        this.#append(logItem);
     }
 
-    logAttack({ damages, recoveries }: IAttackReport)
+    logAttack({ damages, recoveries, effects }: IAttackReport)
     {
-        const flatDamages = this._flatDamages(damages);
-        const logItem = new LogItem();
+        const beforeLogItem = LogItem.createEffectItem(effects, EffectTiming.BeforeAttack, EffectTiming.BeforeTakeHit);
 
-        const getOptions = (damage: Damage): ILogItemOptions =>
-        {
-            return { badge: { color: damage.metadata.color, position: "start" } };
-        };
+        const mainLogItem = new LogItem();
 
-        for (const damage of flatDamages)
+        for (const damage of DamageUtils.flat(damages))
         {
             if (Array.isArray(damage))
+                for (const line of LogLine.createComboLines(damage))
+                    mainLogItem.appendLine(line);
+            else 
             {
-                const textEls: HTMLSpanElement[] = [];
-                const options: ILogItemOptions[] = [];
-                for (const dmg of damage)
-                {
-                    textEls.push(new LogText().attack(dmg));
-                    options.push(getOptions(dmg));
-                }
-                logItem.appendComboLogLine(textEls, options);
-            }
-            else if (damage instanceof AttackDamage)
-            {
-                const textEl = new LogText().attack(damage);
-                logItem.appendLogLine(textEl, getOptions(damage));
-            }
-            else if (damage instanceof TalismanDamage)
-            {
-                const textEl = new LogText().talisman(damage);
-                logItem.appendLogLine(textEl, getOptions(damage));
-            }
-            else if (damage instanceof WoundDamage)
-            {
-                const textEl = new LogText().wound(damage);
-                logItem.appendLogLine(textEl, getOptions(damage));
-            }
-            else
-            {
-                this._assertNever(damage.type as never);
+                const line = LogLine.createDamageLine(damage);
+                mainLogItem.appendLine(line);
             }
         }
 
-        if (recoveries?.length)
+        for (const rec of recoveries)
         {
-            for (const rec of recoveries)
-            {
-                const textEl = new LogText().recovery(rec);
-                logItem.appendLogLine(textEl, { badge: { color: rec.metadata.color, position: "start" } });
-            }
+            const line = LogLine.createRecoveryLine(rec);
+            mainLogItem.appendLine(line);
         }
 
-        this._append(logItem);
+        const afterLogItem = LogItem.createEffectItem(effects, EffectTiming.AfterTakeHit, EffectTiming.AfterAttack);
+
+        const logGroup = new LogGroup(beforeLogItem, mainLogItem, afterLogItem);
+
+        this.#append(logGroup);
     }
 
-    logSimulate({ stats, fights }: ISimulateFightsResult)
+    logSimulation(summary: ISimulationSummary)
     {
-        const logText = new LogText();
+        const logText = new LogText().simulationSummary(summary);
+        const logLine = new LogLine(logText, { centered: true });
+        const logItem = new LogItem(logLine);
+        this.#append(logItem);
 
-        this._append(new LogItem(
-            logText.simulateFights({ stats, fights }),
-            { centered: true }
-        ));
+        for (const stat of summary.stats)
+        {
+            const logText = new LogText().simulationFighterStats(stat);
+            const logLine = new LogLine(logText, { centered: true });
 
-        const badge: ILogItemBadge = { color: "red", position: "both" };
+            if (stat.rate > 50)
+                logLine.appendBadge("red", LogBadgePosition.Both);
 
-        this._append(new LogItem(
-            logText.simulateStat(stats[0]),
-            { centered: true, badge: stats[0].rate > 50 ? badge : undefined }
-        ));
+            const logItem = new LogItem(logLine);
 
-        this._append(new LogItem(
-            logText.simulateStat(stats[1]),
-            { centered: true, badge: stats[1].rate > 50 ? badge : undefined }
-        ));
+            this.#append(logItem);
+        }
     }
 }

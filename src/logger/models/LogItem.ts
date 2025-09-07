@@ -1,91 +1,43 @@
-import type { ILogItemOptions, ILogTextEl } from "../types";
+import { LogLine } from "./LogLine";
+// effect
+import { EffectTiming } from "@/effect/enums";
+import { EffectUtils } from "@/effect/utils";
+import type { IEffectReport } from "@/effect/types";
 
 export class LogItem
 {
-    public readonly element: HTMLDivElement = document.createElement("div");
-    private options?: ILogItemOptions;
+    readonly element = document.createElement("div");
+    lines: LogLine[] = [];
 
-    constructor(textEl?: ILogTextEl, options?: ILogItemOptions)
+    constructor(logLine?: LogLine)
     {
         this.element.className = "log-item";
-        this.options = options;
 
-        if (textEl)
-            this.appendLogLine(textEl, options);
+        if (logLine)
+            this.element.append(logLine.element);
     }
 
-    appendLogLine(textEl: ILogTextEl, options?: ILogItemOptions)
+    appendLine(logLine: LogLine)
     {
-        let opts = options ?? this.options;
-
-        const logLine = this.createLogLine(textEl, opts);
-        this.element.appendChild(logLine);
+        this.lines.push(logLine);
+        this.element.append(logLine.element);
     }
 
-    appendComboLogLine(textEls: ILogTextEl[], options?: ILogItemOptions[])
+    getLastLine()
     {
-        if (textEls.length === 1)
+        return this.lines[this.lines.length - 1];
+    }
+
+    static createEffectItem(report: IEffectReport, ...timings: EffectTiming[])
+    {
+        const logItem = new LogItem();
+        const effects = EffectUtils.filterEffectReport(report, ...timings);
+        for (const eft of effects)
         {
-            this.appendLogLine(textEls[0], options?.[0]);
-            return;
+            const line = LogLine.createEffectLine(eft);
+            logItem.appendLine(line);
         }
 
-        for (let i = 0; i < textEls.length; i++)
-        {
-            const lineEl = this.createLogLine(textEls[i], options?.[i], true);
-            this.element.appendChild(lineEl);
-        }
-
-        const comboEl = document.createElement("div");
-        comboEl.classList.add("log-combo");
-        comboEl.append(`${textEls.length}X`);
-        comboEl.style.height = textEls.length * 28 + (textEls.length - 1) * 2 + "px";
-
-        this.getLastLogLine()?.appendChild(comboEl);
-    }
-
-    createLogLine(textEl: ILogTextEl, opts?: ILogItemOptions, combo?: boolean)
-    {
-        const lineEl = document.createElement("div");
-        lineEl.classList.add("log-line");
-        if (opts?.centered)
-            lineEl.classList.add("log-line-center");
-        if (combo)
-            lineEl.classList.add("log-line-combo");
-
-        lineEl.appendChild(textEl);
-
-        if (opts?.badge)
-        {
-            const { color, position } = opts.badge;
-
-            if (position === "start" || position === "both")
-            {
-                const badgeEl = this.createBadgeEl(color);
-                badgeEl.classList.add("log-badge-start");
-                lineEl.appendChild(badgeEl);
-            }
-            if (position === "end" || position === "both") {
-                const badgeEl = this.createBadgeEl(color);
-                badgeEl.classList.add("log-badge-end");
-                lineEl.appendChild(badgeEl);
-            }
-        }
-
-        return lineEl;
-    }
-
-    createBadgeEl(color: string)
-    {
-        const badgeEl = document.createElement("div");
-        badgeEl.classList.add("log-badge");
-        badgeEl.style.backgroundColor = color;
-
-        return badgeEl;
-    }
-
-    getLastLogLine()
-    {
-        return this.element.lastElementChild;
+        return logItem;
     }
 }

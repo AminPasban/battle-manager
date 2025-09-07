@@ -1,1 +1,1 @@
-export * from "./BattleManager";
+export * from "./models/BattleManager";

@@ -1,16 +1,17 @@
-import type { ILogTextEl } from "../types";
 // battle manager
-import type { ISimulateFightsResult, ISimulateFightsStat } from "@/battle-manager/types";
+import type { ISimulationFighterStats, ISimulationSummary } from "@/battle-manager/types";
 // character
 import type { Character } from "@/character";
 // damage
 import type { AttackDamage, TalismanDamage, WoundDamage } from "@/damage";
 // recovery
 import { type Recovery } from "@/recovery";
+// effect
+import type { Effect } from "@/effect";
 
 export class LogText
 {
-    readonly element: ILogTextEl = document.createElement("span");
+    readonly element = document.createElement("span");
 
     constructor()
     {
@@ -30,32 +31,23 @@ export class LogText
         this.element.append(`(${before} => ${after} HP)`);
     }
 
-    private clear()
-    {
-        this.element.replaceChildren();
-    }
-
     start(player1: Character, player2: Character)
     {
-        this.clear();
-
         this.element.append(`${player1.name} (${player1.hp} HP) `);
         this.element.append("----- VS ----- ");
         this.element.append(`${player2.name} (${player2.hp} HP)`);
 
-        return this.element.cloneNode(true) as HTMLSpanElement;
+        return this;
     }
 
     winner(player: Character)
     {
-        this.clear();
         this.element.append(`${player.name} wins (${player.hp} HP)`);
-        return this.element.cloneNode(true) as HTMLSpanElement;
+        return this;
     }
 
     attack(damage: AttackDamage)
     {
-        this.clear();
         this.element.append(`${damage.source.name} `);
 
         const { critMultiplier } = damage.specialEffects;
@@ -67,51 +59,59 @@ export class LogText
         this.element.append(`=> ${damage.target.name} `);
         this.appendHPChange(damage.targetHPBeforeDamage, damage.targetHPAfterDamage);
 
-        return this.element.cloneNode(true) as HTMLSpanElement;
+        return this;
     }
 
     talisman(damage: TalismanDamage)
     {
-        this.clear();
         this.element.append(`${damage.source.name} `);
         this.addSpan(`${damage.amount} TALISMAN-DMG `, damage.metadata.color);
         this.element.append(`=> ${damage.target.name} `);
         this.appendHPChange(damage.targetHPBeforeDamage, damage.targetHPAfterDamage);
 
-        return this.element.cloneNode(true) as HTMLSpanElement;
+        return this;
     }
 
     wound(damage: WoundDamage)
     {
-        this.clear();
         this.element.append(`${damage.target.name} `);
         this.addSpan(`-${damage.amount} Wounded `, damage.metadata.color);
         this.appendHPChange(damage.targetHPBeforeDamage, damage.targetHPAfterDamage);
 
-        return this.element.cloneNode(true) as HTMLSpanElement;
+        return this;
     }
 
     recovery(recovery: Recovery)
     {
-        this.clear();
         this.element.append(`${recovery.target.name} `);
-        this.addSpan(`+${recovery.amount} ${recovery.type}ed `, recovery.metadata.color);
+        this.addSpan(`+${recovery.amount} ${recovery.type} `, recovery.metadata.color);
         this.appendHPChange(recovery.targetHPBeforeRecovery, recovery.targetHPAfterRecovery);
 
-        return this.element.cloneNode(true) as HTMLSpanElement;
+        return this;
     }
 
-    simulateFights({ fights, stats }: ISimulateFightsResult)
+    effect(effect: Effect)
     {
-        this.clear();
-        this.element.append(`${stats[0].name} ----- ${fights} fights ----- ${stats[1].name}`);
-        return this.element.cloneNode(true) as HTMLSpanElement;
+        const operator = (effect.isPositive && !effect.isExpired) || (!effect.isPositive && effect.isExpired) ? "+" : "-";
+
+        this.element.append(`${effect.target.name} `);
+        this.addSpan(`${operator}${effect.intensity} ${effect.type} `, effect.metadata.color);
+        this.element.append(`(${effect.orginalValue} => ${effect.resultingValue} ${effect.type})`);
+
+        return this;
     }
 
-    simulateStat(stat: ISimulateFightsStat)
+    simulationSummary({ fights, stats }: ISimulationSummary)
     {
-        this.clear();
-        this.element.append(`${stat.name} ${stat.wins} wins (${stat.rate}%)`);
-        return this.element.cloneNode(true) as HTMLSpanElement;
+        this.element.append(stats[0].name);
+        this.element.append(` ----- ${fights} fights ----- `);
+        this.element.append(stats[1].name);
+        return this;
+    }
+
+    simulationFighterStats(stats: ISimulationFighterStats)
+    {
+        this.element.append(`${stats.name} ${stats.wins} wins (${stats.rate}%)`);
+        return this;
     }
 }

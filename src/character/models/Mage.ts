@@ -1,4 +1,5 @@
 import { Character } from "./Character";
+import { CharacterBasics } from "./CharacterBasics";
 import type { IAttackResult, ITalismanAbility } from "../types";
 // damage
 import { AttackDamage, TalismanDamage, WoundDamage } from "@/damage";
@@ -9,14 +10,15 @@ import type { Recovery } from "@/recovery";
 export class Mage extends Character<AttackDamage> implements ITalismanAbility
 {
     protected namePrefix = "🧙‍♂️";
-    protected _maxHP = 980;
-    protected _currentHP = 980;
-    protected _armor = 2.5;
 
-    readonly power = { min: 178, max: 182 };
     readonly talisman: ITalisman = { power: 155, chance: 0.35 };
     readonly talismanWoundMultiplier = 0.25;
     readonly healMultiplier = 0.05;
+
+    protected initBasics(): CharacterBasics
+    {
+        return new CharacterBasics(980, 2.5, { min: 178, max: 1182 });
+    }
 
     onAttack(target: Character): IAttackResult<AttackDamage>
     {

@@ -5,6 +5,8 @@ import type { ICrit, IMultiAttack, ITalisman } from "@/damage/types";
 import type { Recovery } from "@/recovery";
 // effect
 import type { Effect } from "@/effect";
+import type { EffectTiming } from "@/effect/enums";
+import type { IEffectReport } from "@/effect/types";
 
 export interface IAttackResult<T>
 {
@@ -24,7 +26,8 @@ export interface IAfterAttackResult
 export interface ITakeHitResult
 {
     damage: Damage;
-    effects?: Effect[];
+    [EffectTiming.BeforeTakeHit]: Effect[];
+    [EffectTiming.AfterTakeHit]: Effect[];
 }
 
 export interface IBeforeTakeHitResult { }
@@ -34,8 +37,14 @@ export interface IAfterTakeHitResult { }
 export interface IAttackReport
 {
     damages: Damage[],
-    recoveries?: Recovery[];
-    effects?: Effect[];
+    recoveries: Recovery[];
+    effects: IEffectReport;
+}
+
+export interface ICharacterBasicPower
+{
+    readonly min: number;
+    readonly max: number;
 }
 
 export interface ICharacterPower

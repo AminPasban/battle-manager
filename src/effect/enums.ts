@@ -1,7 +1,19 @@
+export enum EffectType
+{
+    Armor = "Armor",
+    Power = "Power"
+}
+
+export enum EffectStatus
+{
+    Active = "Active",
+    Expired = "Expired"
+}
+
 export enum EffectTiming
 {
-    AffterAttack = "AffterAttack",
+    AfterAttack = "AfterAttack",
     BeforeAttack = "BeforeAttack",
     BeforeTakeHit = "BeforeTakeHit",
-    AffterTakeHit = "AffterTakeHit",
+    AfterTakeHit = "AfterTakeHit",
 }

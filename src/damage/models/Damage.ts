@@ -1,6 +1,7 @@
-import type { Character } from "@/character";
 import type { DamageType } from "../enums";
 import type { IDamageMetadata } from "../types";
+// character
+import type { Character } from "@/character";
 
 export abstract class Damage
 {

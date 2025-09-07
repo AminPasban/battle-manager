@@ -15,6 +15,11 @@ export default class Utils
         return Math.max(min, Math.min(value, max));
     }
 
+    static snapshot<T extends Record<string, any>>(obj: T): T
+    {
+        return { ...obj };
+    }
+
     static generateId(length: number = 6): string
     {
         const chars = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";

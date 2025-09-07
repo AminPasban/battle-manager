@@ -4,16 +4,8 @@ export interface ILoggerOptions
     autoScroll?: boolean;
 }
 
-export interface ILogItemBadge
+export interface ILogLineOptions
 {
-    color: string;
-    position: "start" | "end" | "both";
-}
-
-export interface ILogItemOptions
-{
-    badge?: ILogItemBadge;
     centered?: boolean;
+    indented?: boolean;
 }
-
-export type ILogTextEl = HTMLSpanElement;
