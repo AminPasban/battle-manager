@@ -16,33 +16,92 @@ import { EffectTiming } from "@/effect/enums";
 
 export class Logger
 {
-    private container: HTMLElement | null = document.getElementById("log");
-    private autoScroll: boolean;
+    #container: HTMLElement | null = document.getElementById("log");
+    #logQueue: Array<LogGroup | LogItem> = [];
+    #queueTimer: NodeJS.Timeout | null = null;
+    #isQueueEnabled: boolean;
+    #queueDelayMS: number = 2000;
+    #isQueueRunning: boolean = false;
+    #autoScroll: boolean;
 
     constructor(opts: ILoggerOptions = {})
     {
-        this.container = opts.container ?? this.container;
-        this.autoScroll = opts.autoScroll ?? true;
+        this.#container = opts.container ?? this.#container;
+
+        if (!this.#container)
+            throw new Error("Logger container not found. Either provide a container via options or ensure an element with ID 'log' exists in the DOM.");
+
+        this.#isQueueEnabled = opts.isQueueEnabled ?? false;
+        this.#queueDelayMS = opts.queueDelayMS ?? this.#queueDelayMS;
+        this.#autoScroll = opts.autoScroll ?? true;
+    }
+
+    #append(item: LogItem | LogGroup)
+    {
+        if (!this.#isQueueEnabled)
+        {
+            this.#renderItem(item);
+            return;
+        }
+
+        this.#logQueue.push(item);
+
+        if (!this.#isQueueRunning)
+        {
+            this.#isQueueRunning = true;
+            this.#runQueue();
+        }
+    }
+
+    async #runQueue()
+    {
+        while (this.#logQueue.length > 0)
+        {
+            await new Promise<void>((resolve) =>
+            {
+                this.#queueTimer = setTimeout(() =>
+                {
+                    this.#renderItem(this.#logQueue.shift()!);
+                    resolve();
+                }, this.#queueDelayMS);
+            });
+        }
+    }
+
+    #renderItem(item: LogItem | LogGroup)
+    {
+        this.#container!.append(item.element);
+
+        if (this.#autoScroll)
+        {
+            requestAnimationFrame(() =>
+            {
+                this.#container!.scrollTop = this.#container!.scrollHeight;
+            });
+        }
+    }
+
+    enableQueue()
+    {
+        this.#isQueueEnabled = true;
+    }
+
+    disableQueue()
+    {
+        this.#isQueueEnabled = false;
     }
 
     clear()
     {
-        this.container?.replaceChildren();
-    }
+        this.#container?.replaceChildren();
 
-    #append(...items: (LogItem | LogGroup)[])
-    {
-        if (!this.container) return;
-
-        for (const item of items)
-            this.container.append(item.element);
-
-        if (!this.autoScroll) return;
-
-        requestAnimationFrame(() =>
+        this.#logQueue = [];
+        this.#isQueueRunning = false;
+        if (this.#queueTimer)
         {
-            this.container!.scrollTop = this.container!.scrollHeight;
-        });
+            clearTimeout(this.#queueTimer);
+            this.#queueTimer = null;
+        }
     }
 
     logStart(player1: Character, player2: Character)

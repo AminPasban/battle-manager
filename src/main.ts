@@ -8,13 +8,21 @@ const c2 = CharacterFactory.new(CharacterType.Mage, "Merlin");
 const c3 = CharacterFactory.new(CharacterType.Archer, "Arash");
 
 const battleManager = new BattleManager(c1, c3);
-const logger = new Logger();
-
+let logger = new Logger({ isQueueEnabled: true });
 battleManager.fight(logger);
 
 document.getElementById("Fight")?.addEventListener("click", () =>
 {
     logger.clear();
+    logger.disableQueue();
+    battleManager.reset();
+    battleManager.fight(logger);
+});
+
+document.getElementById("QueueFight")?.addEventListener("click", () =>
+{
+    logger.clear();
+    logger.enableQueue();
     battleManager.reset();
     battleManager.fight(logger);
 });
@@ -22,6 +30,7 @@ document.getElementById("Fight")?.addEventListener("click", () =>
 document.getElementById("Simulate")?.addEventListener("click", () =>
 {
     logger.clear();
+    logger.disableQueue();
     battleManager.reset();
     battleManager.simulateFights(1000, logger);
 });

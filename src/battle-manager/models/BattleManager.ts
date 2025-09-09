@@ -1,8 +1,8 @@
+import type { ISimulationSummary } from "../types";
 // character
 import { Character } from "@/character";
 // logger
 import { Logger } from "@/logger";
-import type { ISimulationSummary } from "../types";
 
 export class BattleManager
 {

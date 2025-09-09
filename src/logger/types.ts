@@ -1,6 +1,8 @@
 export interface ILoggerOptions
 {
     container?: HTMLDivElement | null;
+    isQueueEnabled?: boolean;
+    queueDelayMS?: number;
     autoScroll?: boolean;
 }
 
