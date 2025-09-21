@@ -13,11 +13,12 @@ import Utils from "@/utils";
 
 export class Warrior extends Character<AttackDamage> implements ICritAbility
 {
-    protected namePrefix = "⚔️";
+    readonly id: string = Utils.generateId("war");
+    protected tag = "⚔️";
 
     readonly crit: ICrit = { multiplier: 2.2, chance: 0.25 };
     readonly lifestealMultiplier = 0.25;
-    readonly armorEffectIntensity = 7;
+    readonly armorEffectmagnitude = 7;
     readonly receiveArmorEffectChance = 0.2;
 
     protected initBasics(): CharacterBasics
@@ -34,13 +35,14 @@ export class Warrior extends Character<AttackDamage> implements ICritAbility
     {
         if (Utils.isLucky(this.receiveArmorEffectChance))
         {
-            const effect = new ArmorEffect(
+            this.receiveEffect(new ArmorEffect(
                 this,
-                this.armorEffectIntensity,
+                this,
+                this.armorEffectmagnitude,
                 EffectTiming.BeforeTakeHit,
-                EffectTiming.AfterTakeHit
-            );
-            this.receiveEffect(effect);
+                EffectTiming.AfterTakeHit,
+                false
+            ));
         }
     }
 

@@ -4,3 +4,9 @@ export enum CharacterType
     Mage = "mage",
     Archer = "archer",
 }
+
+export enum CharacterStatus
+{
+    Ready = "Ready",
+    Dead = "Dead"
+}

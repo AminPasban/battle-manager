@@ -92,11 +92,15 @@ export class LogText
 
     effect(effect: Effect)
     {
-        const operator = (effect.isPositive && !effect.isExpired) || (!effect.isPositive && effect.isExpired) ? "+" : "-";
+        const isActiveBuff = effect.isBuff && !effect.isExpired;
+        const isExpiredDebuff = !effect.isBuff && effect.isExpired;
+
+        const operator = isActiveBuff || isExpiredDebuff ? "+" : "-";
+        const amount = effect.isExpired ? effect.appliedValue : effect.magnitude;
 
         this.element.append(`${effect.target.name} `);
-        this.addSpan(`${operator}${effect.intensity} ${effect.type} `, effect.metadata.color);
-        this.element.append(`(${effect.orginalValue} => ${effect.resultingValue} ${effect.type})`);
+        this.addSpan(`${operator}${amount} ${effect.type} `, effect.metadata.color);
+        this.element.append(`(${effect.baseValue} => ${effect.currentValue} ${effect.type})`);
 
         return this;
     }

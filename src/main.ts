@@ -8,7 +8,7 @@ const c2 = CharacterFactory.new(CharacterType.Mage, "Merlin");
 const c3 = CharacterFactory.new(CharacterType.Archer, "Arash");
 
 const battleManager = new BattleManager(c1, c3);
-let logger = new Logger({ isQueueEnabled: true });
+let logger = new Logger();
 battleManager.fight(logger);
 
 document.getElementById("Fight")?.addEventListener("click", () =>

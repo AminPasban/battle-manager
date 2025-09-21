@@ -15,50 +15,21 @@ export default class Utils
         return Math.max(min, Math.min(value, max));
     }
 
-    static snapshot<T extends Record<string, any>>(obj: T): T
+    static applySign(value: number, isPositive: boolean): number
     {
-        return { ...obj };
+        return isPositive ? value : -value;
     }
 
-    static generateId(length: number = 6): string
+    static generateId(seed?: string, length: number = 6): string
     {
-        const chars = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const chars = "123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         let id = "";
         for (let i = 0; i < length; i++)
         {
             const randomIndex = Math.floor(Math.random() * chars.length);
             id += chars[randomIndex];
         }
-        return id;
+
+        return seed + id;
     }
-
-    static pruneEmpty<T extends Record<string, any>>(obj: T): T
-    {
-        for (const key in obj)
-        {
-            const value = obj[key];
-
-            if (value == null)
-            {
-                delete obj[key];
-                continue;
-            }
-
-            if (Array.isArray(value))
-            {
-                obj[key] = value.filter((x: unknown) => x);
-                continue;
-            }
-
-            if (typeof value === "object")
-            {
-                this.pruneEmpty(value);
-
-                if (Object.keys(value).length === 0)
-                    delete obj[key];
-            }
-        }
-
-        return obj;
-    };
 }

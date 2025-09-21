@@ -1,33 +1,102 @@
 import { EffectTiming, EffectType } from "../enums";
+import type { IEffectMetadata } from "../types";
 // character
 import type { Character } from "@/character";
-import type { IEffectMetadata } from "../types";
 
 export abstract class Effect
 {
-    #applyCount: number = 0;
-    #maxApplyCount: number = 1;
+    #appliedCount: number = 0;
+    #maxApplications: number = 1;
+    #magnitude: number;
 
     abstract readonly id: string;
     abstract readonly type: EffectType;
-    abstract orginalValue: number;
-    abstract resultingValue: number;
+
+    abstract baseValue: number;
+    abstract currentValue: number;
+    public appliedValue: number = 0;
+    public totalAppliedValue: number = 0;
+
     readonly target: Character;
-    readonly isPositive: boolean;
+    readonly source: Character;
+    readonly isBuff: boolean;
     readonly applyTiming: EffectTiming;
     readonly expireTiming: EffectTiming;
-    public intensity: number;
+
     public isExpired: boolean = false;
     public metadata: IEffectMetadata;
 
-    constructor(target: Character, intensity: number, applyTiming: EffectTiming, expireTiming: EffectTiming, isPositive: boolean = true)
+    constructor(target: Character, source: Character, magnitude: number, applyTiming: EffectTiming, expireTiming: EffectTiming, isBuff: boolean = true)
     {
         this.target = target;
-        this.intensity = intensity;
-        this.isPositive = isPositive;
+        this.source = source;
+        this.#magnitude = magnitude;
+        this.isBuff = isBuff;
         this.applyTiming = applyTiming;
         this.expireTiming = expireTiming;
-        this.metadata = { color: this.isPositive ? "#008000" : "#CB0404" };
+        this.metadata = { color: this.isBuff ? "#008000" : "#CB0404" };
+    }
+
+    get magnitude()
+    {
+        return this.#magnitude;
+    }
+
+    protected abstract onApply(): void;
+    protected abstract onExpire(): void;
+
+    #canApply()
+    {
+        return !this.isExpired && this.#appliedCount < this.#maxApplications;
+    }
+
+    public apply()
+    {
+        if (this.#canApply())
+        {
+            this.onApply();
+            this.#appliedCount++;
+            this.appliedValue = Math.abs(this.currentValue - this.baseValue);
+            this.totalAppliedValue += this.appliedValue;
+        }
+    }
+
+    public update(effect: Effect)
+    {
+        if (this.id !== effect.id)
+            throw new Error(`Effect update failed: IDs do not match (${this.id} != ${effect.id})`);
+
+        this.#magnitude += effect.magnitude;
+    }
+
+    public tryToExpire(): boolean
+    {
+        if (!this.#canApply())
+        {
+            this.onExpire();
+            this.isExpired = true;
+            this.metadata = { color: this.isBuff ? "#CB0404" : "#008000" };
+        }
+
+        return this.isExpired;
+    }
+
+    public snapshot()
+    {
+        return { ...this, magnitude: this.#magnitude };
+    }
+
+    protected createEffectId(seed: string)
+    {
+        const idSegments = [
+            seed,
+            this.source.id,
+            this.target.id,
+            Effect.TIMING_ABBREVIATIONS.get(this.applyTiming),
+            Effect.TIMING_ABBREVIATIONS.get(this.expireTiming),
+        ];
+
+        return (this.isBuff ? "+" : "-") + idSegments.join("-");
     }
 
     static readonly TIMING_ABBREVIATIONS: ReadonlyMap<EffectTiming, string> = new Map([
@@ -37,50 +106,10 @@ export abstract class Effect
         [EffectTiming.AfterAttack, "aatk"],
     ]);
 
-    static getTimingByAbbreviation(abbreviation: string): EffectTiming | undefined {
+    static getTimingByAbbreviation(abbreviation: string): EffectTiming | undefined
+    {
         for (const [key, value] of Effect.TIMING_ABBREVIATIONS.entries())
             if (abbreviation === value)
                 return key;
     }
-
-    #canApply()
-    {
-        return !this.isExpired && this.#applyCount < this.#maxApplyCount;
-    }
-
-    protected createEffectID()
-    {
-        const idSegments = [
-            this.type,
-            this.target.id,
-            Effect.TIMING_ABBREVIATIONS.get(this.applyTiming),
-            Effect.TIMING_ABBREVIATIONS.get(this.expireTiming),
-        ];
-
-        return idSegments.join("-");
-    }
-
-    public apply()
-    {
-        if (this.#canApply())
-        {
-            this.onApply();
-            this.#applyCount++;
-        }
-    }
-
-    public tryToExpire(): boolean
-    {
-        if (!this.#canApply())
-        {
-            this.onExpire();
-            this.isExpired = true;
-            this.metadata = { color: this.isPositive ? "#CB0404" : "#008000" };
-        }
-
-        return this.isExpired;
-    }
-
-    protected abstract onApply(): void;
-    protected abstract onExpire(): void;
 }

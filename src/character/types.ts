@@ -41,6 +41,12 @@ export interface IAttackReport
     effects: IEffectReport;
 }
 
+export interface ICharacterName
+{
+    readonly base: string;
+    readonly prefix: string;
+}
+
 export interface ICharacterBasicPower
 {
     readonly min: number;

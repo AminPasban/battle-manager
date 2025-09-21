@@ -6,10 +6,13 @@ import { AttackDamage, TalismanDamage, WoundDamage } from "@/damage";
 import type { ITalisman } from "@/damage/types";
 // recovery
 import type { Recovery } from "@/recovery";
+// utils
+import Utils from "@/utils";
 
 export class Mage extends Character<AttackDamage> implements ITalismanAbility
 {
-    protected namePrefix = "🧙‍♂️";
+    readonly id: string = Utils.generateId("mge");
+    protected tag = "🧙‍♂️";
 
     readonly talisman: ITalisman = { power: 155, chance: 0.35 };
     readonly talismanWoundMultiplier = 0.25;

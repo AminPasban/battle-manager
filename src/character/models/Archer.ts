@@ -13,7 +13,8 @@ import Utils from "@/utils";
 
 export class Archer extends Character<AttackDamage> implements ICritAbility, IMultiAttackAbility
 {
-    protected namePrefix: string = "🏹";
+    readonly id: string = Utils.generateId("arc");
+    protected tag: string = "🏹";
 
     readonly crit: ICrit = { multiplier: 1.6, chance: 0.5 };
     readonly multiAttack: IMultiAttack = { chance: 0.5 };
@@ -41,6 +42,7 @@ export class Archer extends Character<AttackDamage> implements ICritAbility, IMu
         if (damage instanceof AttackDamage && damage.attackType === AttackType.Crit)
         {
             const effect = new PowerEffect(
+                this,
                 this,
                 75,
                 EffectTiming.AfterTakeHit,
